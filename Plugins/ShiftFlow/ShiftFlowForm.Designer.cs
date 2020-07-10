@@ -49,6 +49,9 @@ namespace ShiftFlow
             this.label1 = new System.Windows.Forms.Label();
             this.btnPublish = new System.Windows.Forms.Button();
             this.panel4 = new System.Windows.Forms.Panel();
+            this.button1 = new System.Windows.Forms.Button();
+            this.label5 = new System.Windows.Forms.Label();
+            this.label4 = new System.Windows.Forms.Label();
             this.comboBox1 = new System.Windows.Forms.ComboBox();
             this.textBox2 = new System.Windows.Forms.TextBox();
             this.textBox1 = new System.Windows.Forms.TextBox();
@@ -70,9 +73,6 @@ namespace ShiftFlow
             this.panel3 = new System.Windows.Forms.GroupBox();
             this.txtResult = new System.Windows.Forms.TextBox();
             this.lblRunCommand = new System.Windows.Forms.Label();
-            this.label4 = new System.Windows.Forms.Label();
-            this.label5 = new System.Windows.Forms.Label();
-            this.button1 = new System.Windows.Forms.Button();
             this.pnlBasedOn.SuspendLayout();
             this.gbManage.SuspendLayout();
             this.pnlManageBranch.SuspendLayout();
@@ -138,10 +138,11 @@ namespace ShiftFlow
             this.cbBranches.Name = "cbBranches";
             this.cbBranches.Size = new System.Drawing.Size(512, 24);
             this.cbBranches.TabIndex = 3;
+            this.cbBranches.SelectedValueChanged += new System.EventHandler(this.cbBranches_SelectedValueChanged);
             // 
             // btnFinish
             // 
-            this.btnFinish.Location = new System.Drawing.Point(222, 100);
+            this.btnFinish.Location = new System.Drawing.Point(324, 100);
             this.btnFinish.Margin = new System.Windows.Forms.Padding(4);
             this.btnFinish.Name = "btnFinish";
             this.btnFinish.Size = new System.Drawing.Size(102, 29);
@@ -186,23 +187,23 @@ namespace ShiftFlow
             this.pnlPull.Location = new System.Drawing.Point(148, 50);
             this.pnlPull.Margin = new System.Windows.Forms.Padding(4);
             this.pnlPull.Name = "pnlPull";
-            this.pnlPull.Size = new System.Drawing.Size(249, 153);
+            this.pnlPull.Size = new System.Drawing.Size(149, 153);
             this.pnlPull.TabIndex = 6;
             // 
             // cbRemote
             // 
             this.cbRemote.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cbRemote.FormattingEnabled = true;
-            this.cbRemote.Location = new System.Drawing.Point(15, 30);
+            this.cbRemote.Location = new System.Drawing.Point(4, 30);
             this.cbRemote.Margin = new System.Windows.Forms.Padding(4);
             this.cbRemote.Name = "cbRemote";
-            this.cbRemote.Size = new System.Drawing.Size(224, 24);
+            this.cbRemote.Size = new System.Drawing.Size(139, 24);
             this.cbRemote.TabIndex = 3;
             // 
             // label9
             // 
             this.label9.AutoSize = true;
-            this.label9.Location = new System.Drawing.Point(58, 9);
+            this.label9.Location = new System.Drawing.Point(4, 9);
             this.label9.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label9.Name = "label9";
             this.label9.Size = new System.Drawing.Size(139, 17);
@@ -211,7 +212,7 @@ namespace ShiftFlow
             // 
             // btnPull
             // 
-            this.btnPull.Location = new System.Drawing.Point(73, 62);
+            this.btnPull.Location = new System.Drawing.Point(19, 62);
             this.btnPull.Margin = new System.Windows.Forms.Padding(4);
             this.btnPull.Name = "btnPull";
             this.btnPull.Size = new System.Drawing.Size(104, 29);
@@ -271,10 +272,38 @@ namespace ShiftFlow
             this.panel4.Controls.Add(this.textBox2);
             this.panel4.Controls.Add(this.textBox1);
             this.panel4.Controls.Add(this.btnFinish);
-            this.panel4.Location = new System.Drawing.Point(404, 50);
+            this.panel4.Location = new System.Drawing.Point(304, 50);
             this.panel4.Name = "panel4";
-            this.panel4.Size = new System.Drawing.Size(355, 153);
+            this.panel4.Size = new System.Drawing.Size(455, 153);
             this.panel4.TabIndex = 10;
+            // 
+            // button1
+            // 
+            this.button1.Location = new System.Drawing.Point(118, 100);
+            this.button1.Name = "button1";
+            this.button1.Size = new System.Drawing.Size(104, 29);
+            this.button1.TabIndex = 10;
+            this.button1.Text = "Create";
+            this.button1.UseVisualStyleBackColor = true;
+            this.button1.Click += new System.EventHandler(this.button1_Click);
+            // 
+            // label5
+            // 
+            this.label5.AutoSize = true;
+            this.label5.Location = new System.Drawing.Point(25, 62);
+            this.label5.Name = "label5";
+            this.label5.Size = new System.Drawing.Size(25, 17);
+            this.label5.TabIndex = 9;
+            this.label5.Text = "To";
+            // 
+            // label4
+            // 
+            this.label4.AutoSize = true;
+            this.label4.Location = new System.Drawing.Point(22, 33);
+            this.label4.Name = "label4";
+            this.label4.Size = new System.Drawing.Size(79, 17);
+            this.label4.TabIndex = 8;
+            this.label4.Text = "To develop";
             // 
             // comboBox1
             // 
@@ -282,13 +311,13 @@ namespace ShiftFlow
             this.comboBox1.FormattingEnabled = true;
             this.comboBox1.Location = new System.Drawing.Point(56, 59);
             this.comboBox1.Name = "comboBox1";
-            this.comboBox1.Size = new System.Drawing.Size(135, 24);
+            this.comboBox1.Size = new System.Drawing.Size(240, 24);
             this.comboBox1.TabIndex = 7;
             // 
             // textBox2
             // 
             this.textBox2.Enabled = false;
-            this.textBox2.Location = new System.Drawing.Point(202, 59);
+            this.textBox2.Location = new System.Drawing.Point(302, 59);
             this.textBox2.Name = "textBox2";
             this.textBox2.Size = new System.Drawing.Size(141, 22);
             this.textBox2.TabIndex = 2;
@@ -296,7 +325,7 @@ namespace ShiftFlow
             // textBox1
             // 
             this.textBox1.Enabled = false;
-            this.textBox1.Location = new System.Drawing.Point(202, 30);
+            this.textBox1.Location = new System.Drawing.Point(302, 30);
             this.textBox1.Name = "textBox1";
             this.textBox1.Size = new System.Drawing.Size(141, 22);
             this.textBox1.TabIndex = 1;
@@ -493,34 +522,6 @@ namespace ShiftFlow
             this.lblRunCommand.TabIndex = 1;
             this.lblRunCommand.Text = "-";
             // 
-            // label4
-            // 
-            this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(22, 33);
-            this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(79, 17);
-            this.label4.TabIndex = 8;
-            this.label4.Text = "To develop";
-            // 
-            // label5
-            // 
-            this.label5.AutoSize = true;
-            this.label5.Location = new System.Drawing.Point(25, 62);
-            this.label5.Name = "label5";
-            this.label5.Size = new System.Drawing.Size(25, 17);
-            this.label5.TabIndex = 9;
-            this.label5.Text = "To";
-            // 
-            // button1
-            // 
-            this.button1.Location = new System.Drawing.Point(69, 100);
-            this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(104, 29);
-            this.button1.TabIndex = 10;
-            this.button1.Text = "Create";
-            this.button1.UseVisualStyleBackColor = true;
-            this.button1.Click += new System.EventHandler(this.button1_Click);
-            // 
             // ShiftFlowForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(120F, 120F);
@@ -557,6 +558,16 @@ namespace ShiftFlow
             this.ResumeLayout(false);
             this.PerformLayout();
 
+        }
+
+        private void cbBranches_SelectedValueChanged(object sender, System.EventArgs e)
+        {
+            UpdatePullRequestsValues();
+        }
+
+        private void ComboBox1_SelectedValueChanged(object sender, System.EventArgs e)
+        {
+            UpdatePullRequestsValues();
         }
 
         #endregion

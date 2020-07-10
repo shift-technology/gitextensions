@@ -297,17 +297,55 @@ namespace ShiftFlow
 
         private void btnFinish_Click(object sender, EventArgs e)
         {
+            if (string.IsNullOrEmpty(textBox1.Text) || string.IsNullOrEmpty(textBox2.Text))
+            {
+                MessageBox.Show(this, $"The pull requests have not been created", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            var toDevelopNumber = int.Parse(textBox1.Text.Remove(0, 4));
+            var toMasterNumber = int.Parse(textBox2.Text.Remove(0, 4));
+
+            var branchName = cbBranches.SelectedItem.ToString();
+
+            try
+            {
+                var currentRepository = Path.GetFileName(_gitUiCommands.GitModule.WorkingDir.Trim('\\'));
+                var repository = Repositories[currentRepository];
+
+                PullRequest toDevelop = repository.GetPullRequest(toDevelopNumber);
+                PullRequest toMaster = repository.GetPullRequest(toMasterNumber);
+
+                var success1 = toDevelop.Merge(branchName);
+                var success2 = toMaster.Merge(branchName);
+
+                if (!success1 || !success2)
+                {
+                    var bodyMessage = string.Empty;
+                    if (!success1)
+                    {
+                        bodyMessage += $"Failed to merge {branchName} into develop\r\n";
+                    }
+
+                    if (!success2)
+                    {
+                        bodyMessage += $"Failed to merge {branchName} into master\r\n";
+                    }
+
+                    MessageBox.Show(this, bodyMessage, "Failed merge", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                }
+            }
+            catch (Exception exception)
+            {
+                MessageBox.Show(this, $"Error: {exception.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+
             var argsTags = new GitArgumentBuilder("push")
             {
                 "origin",
                 "--tags"
             };
             RunCommand(argsTags);
-        }
-
-        private object[] GetPullRequests(string v1, string v2)
-        {
-            throw new NotImplementedException();
         }
 
         private bool RunCommand(ArgumentString commandText)
@@ -382,7 +420,7 @@ namespace ShiftFlow
 
                 if (mayHavePrs)
                 {
-                    RefreshPrStatus();
+                    UpdatePullRequestsValues();
                 }
             }
             else
@@ -398,37 +436,6 @@ namespace ShiftFlow
             set
             {
                 ShiftFlowPlugin.Instance.OAuthToken[ShiftFlowPlugin.Instance.Settings] = value;
-            }
-        }
-
-        private void RefreshPrStatus()
-        {
-            var branchType = cbManageType.SelectedValue.ToString();
-            var branchName = cbBranches.SelectedItem.ToString();
-
-            try
-            {
-                var currentRepository = Path.GetFileName(_gitUiCommands.GitModule.WorkingDir.Trim('\\'));
-                var repository = Repositories[currentRepository];
-                var prs = repository.GetPullRequests();
-                var branchPullrequests = prs.Where(p => p.Head.Ref == branchName).ToArray();
-
-                if (branchPullrequests.Length < 2)
-                {
-                    return;
-                }
-
-                var masterBranch = comboBox1.SelectedItem.ToString();
-
-                var toDevelop = branchPullrequests.FirstOrDefault(b => b.Base.Ref == "develop");
-                var toMaster = branchPullrequests.FirstOrDefault(b => b.Base.Ref == masterBranch);
-
-                textBox1.Text = $"PR #{toDevelop.Number}";
-                textBox2.Text = $"PR #{toMaster.Number}";
-            }
-            catch (Exception e)
-            {
-                MessageBox.Show(this, $"Error: {e.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
@@ -471,33 +478,95 @@ namespace ShiftFlow
             }
         }
 
-        private void button1_Click(object sender, EventArgs e)
-        {
-            var branchType = cbManageType.SelectedValue.ToString();
-            var branchName = cbBranches.SelectedItem.ToString();
+        private string _currentBranch = string.Empty;
+        private string _currentBranchType = string.Empty;
 
+        private void UpdatePullRequestsValues()
+        {
             try
             {
+                button1.Enabled = false;
+                btnFinish.Enabled = false;
+                comboBox1.Enabled = true;
+                textBox1.Text = string.Empty;
+                textBox2.Text = string.Empty;
+
+                var branchType = cbManageType.SelectedValue.ToString();
+                var branchName = cbBranches.SelectedItem.ToString();
+
+                if (branchName == _loading.Text || string.IsNullOrEmpty(branchName))
+                {
+                    return;
+                }
+
+                if (_currentBranch == branchName && _currentBranchType == branchType)
+                {
+                    return;
+                }
+
+                var masterBranch = comboBox1.SelectedItem.ToString();
+
+                if (string.IsNullOrEmpty(masterBranch) || masterBranch == _loading.Text)
+                {
+                    return;
+                }
+
                 var currentRepository = Path.GetFileName(_gitUiCommands.GitModule.WorkingDir.Trim('\\'));
                 var repository = Repositories[currentRepository];
                 var prs = repository.GetPullRequests();
                 var branchPullrequests = prs.Where(p => p.Head.Ref == branchName).ToArray();
 
-                PullRequest toDevelop = null;
-                PullRequest toMaster = null;
-                var masterBranch = comboBox1.SelectedItem.ToString();
-                if (branchPullrequests.Length > 1)
+                if (branchPullrequests.Length == 2)
                 {
-                    return;
+                    var toDevelop = branchPullrequests.FirstOrDefault(b => b.Base.Ref == "develop");
+                    var toMaster = branchPullrequests.FirstOrDefault(b => b.Base.Ref != "develop");
+                    comboBox1.SelectedItem = toMaster.Base.Ref;
+                    comboBox1.Enabled = false;
+
+                    textBox1.Text = $"PR #{toDevelop.Number}";
+                    textBox2.Text = $"PR #{toMaster.Number}";
+                    button1.Enabled = false;
+                    btnFinish.Enabled = true;
                 }
                 else
                 {
-                    toDevelop = repository.CreatePullRequest(branchName, "develop", "first title 1", "body 1");
-                    toMaster = repository.CreatePullRequest(branchName, masterBranch, "first title 2", "body 2");
+                    button1.Enabled = true;
+                    btnFinish.Enabled = false;
+                }
+            }
+            catch (Exception exception)
+            {
+                MessageBox.Show(this, $"Error: {exception.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                var branchType = cbManageType.SelectedValue.ToString();
+                var branchName = cbBranches.SelectedItem.ToString();
+
+                if (branchName == _loading.Text || string.IsNullOrEmpty(branchName))
+                {
+                    return;
                 }
 
-                textBox1.Text = $"PR #{toDevelop.Number}";
-                textBox2.Text = $"PR #{toMaster.Number}";
+                if (_currentBranch == branchName && _currentBranchType == branchType)
+                {
+                    return;
+                }
+
+                var currentRepository = Path.GetFileName(_gitUiCommands.GitModule.WorkingDir.Trim('\\'));
+                var repository = Repositories[currentRepository];
+                var prs = repository.GetPullRequests();
+                var branchPullrequests = prs.Where(p => p.Head.Ref == branchName).ToArray();
+
+                var toDevelop = repository.CreatePullRequest(branchName, "develop", $"PR to develop for {branchName}", $"PR to develop for {branchName}");
+                var masterBranch = comboBox1.SelectedItem.ToString();
+                var toMaster = repository.CreatePullRequest(branchName, masterBranch, $"PR to {masterBranch} for {branchName}", $"PR to {masterBranch} for {branchName}");
+
+                UpdatePullRequestsValues();
             }
             catch (Exception exception)
             {
