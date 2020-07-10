@@ -1,10 +1,12 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
+    <ProjectReference Include="..\..\Externals\Git.hub\Git.hub\Git.hub.csproj" />
     <ProjectReference Include="..\..\GitCommands\GitCommands.csproj" />
     <ProjectReference Include="..\..\GitExtUtils\GitExtUtils.csproj" />
     <ProjectReference Include="..\..\Plugins\GitUIPluginInterfaces\GitUIPluginInterfaces.csproj" />
     <ProjectReference Include="..\..\ResourceManager\ResourceManager.csproj" />
+    <ProjectReference Include="..\GitHub3\GitHub3.csproj" />
   </ItemGroup>
 
   <ItemGroup>
@@ -18,6 +20,16 @@
       <Link>Properties\success.png</Link>
     </Content>
     <None Include="Resources\IconGitFlow.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="GitUI">
+      <HintPath>..\..\artifacts\obj\GitUI\Debug\net461\GitUI.dll</HintPath>
+    </Reference>
   </ItemGroup>
 
   <ItemGroup>

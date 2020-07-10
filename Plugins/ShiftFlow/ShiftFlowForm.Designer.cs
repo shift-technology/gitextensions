@@ -1,4 +1,6 @@
-﻿namespace ShiftFlow
+﻿using System.Windows.Forms;
+
+namespace ShiftFlow
 {
     partial class ShiftFlowForm
     {
@@ -38,7 +40,6 @@
             this.btnFinish = new System.Windows.Forms.Button();
             this.gbManage = new System.Windows.Forms.GroupBox();
             this.pnlManageBranch = new System.Windows.Forms.Panel();
-            this.panel2 = new System.Windows.Forms.Panel();
             this.pnlPull = new System.Windows.Forms.Panel();
             this.cbRemote = new System.Windows.Forms.ComboBox();
             this.label9 = new System.Windows.Forms.Label();
@@ -48,6 +49,9 @@
             this.label1 = new System.Windows.Forms.Label();
             this.btnPublish = new System.Windows.Forms.Button();
             this.panel4 = new System.Windows.Forms.Panel();
+            this.comboBox1 = new System.Windows.Forms.ComboBox();
+            this.textBox2 = new System.Windows.Forms.TextBox();
+            this.textBox1 = new System.Windows.Forms.TextBox();
             this.cbManageType = new System.Windows.Forms.ComboBox();
             this.btnClose = new System.Windows.Forms.Button();
             this.cbType = new System.Windows.Forms.ComboBox();
@@ -66,6 +70,9 @@
             this.panel3 = new System.Windows.Forms.GroupBox();
             this.txtResult = new System.Windows.Forms.TextBox();
             this.lblRunCommand = new System.Windows.Forms.Label();
+            this.label4 = new System.Windows.Forms.Label();
+            this.label5 = new System.Windows.Forms.Label();
+            this.button1 = new System.Windows.Forms.Button();
             this.pnlBasedOn.SuspendLayout();
             this.gbManage.SuspendLayout();
             this.pnlManageBranch.SuspendLayout();
@@ -129,12 +136,12 @@
             this.cbBranches.Location = new System.Drawing.Point(235, 10);
             this.cbBranches.Margin = new System.Windows.Forms.Padding(4);
             this.cbBranches.Name = "cbBranches";
-            this.cbBranches.Size = new System.Drawing.Size(466, 24);
+            this.cbBranches.Size = new System.Drawing.Size(512, 24);
             this.cbBranches.TabIndex = 3;
             // 
             // btnFinish
             // 
-            this.btnFinish.Location = new System.Drawing.Point(44, 37);
+            this.btnFinish.Location = new System.Drawing.Point(222, 100);
             this.btnFinish.Margin = new System.Windows.Forms.Padding(4);
             this.btnFinish.Name = "btnFinish";
             this.btnFinish.Size = new System.Drawing.Size(102, 29);
@@ -151,14 +158,13 @@
             this.gbManage.Margin = new System.Windows.Forms.Padding(4);
             this.gbManage.Name = "gbManage";
             this.gbManage.Padding = new System.Windows.Forms.Padding(4);
-            this.gbManage.Size = new System.Drawing.Size(785, 211);
+            this.gbManage.Size = new System.Drawing.Size(785, 252);
             this.gbManage.TabIndex = 6;
             this.gbManage.TabStop = false;
             this.gbManage.Text = "Manage existing branches:";
             // 
             // pnlManageBranch
             // 
-            this.pnlManageBranch.Controls.Add(this.panel2);
             this.pnlManageBranch.Controls.Add(this.pnlPull);
             this.pnlManageBranch.Controls.Add(this.panel1);
             this.pnlManageBranch.Controls.Add(this.lblPrefixManage);
@@ -169,27 +175,18 @@
             this.pnlManageBranch.Location = new System.Drawing.Point(12, 38);
             this.pnlManageBranch.Margin = new System.Windows.Forms.Padding(4);
             this.pnlManageBranch.Name = "pnlManageBranch";
-            this.pnlManageBranch.Size = new System.Drawing.Size(762, 164);
+            this.pnlManageBranch.Size = new System.Drawing.Size(762, 206);
             this.pnlManageBranch.TabIndex = 7;
-            // 
-            // panel2
-            // 
-            this.panel2.BackColor = System.Drawing.SystemColors.ActiveCaption;
-            this.panel2.Location = new System.Drawing.Point(560, 68);
-            this.panel2.Margin = new System.Windows.Forms.Padding(4);
-            this.panel2.Name = "panel2";
-            this.panel2.Size = new System.Drawing.Size(1, 88);
-            this.panel2.TabIndex = 5;
             // 
             // pnlPull
             // 
             this.pnlPull.Controls.Add(this.cbRemote);
             this.pnlPull.Controls.Add(this.label9);
             this.pnlPull.Controls.Add(this.btnPull);
-            this.pnlPull.Location = new System.Drawing.Point(210, 50);
+            this.pnlPull.Location = new System.Drawing.Point(148, 50);
             this.pnlPull.Margin = new System.Windows.Forms.Padding(4);
             this.pnlPull.Name = "pnlPull";
-            this.pnlPull.Size = new System.Drawing.Size(342, 105);
+            this.pnlPull.Size = new System.Drawing.Size(249, 153);
             this.pnlPull.TabIndex = 6;
             // 
             // cbRemote
@@ -199,13 +196,13 @@
             this.cbRemote.Location = new System.Drawing.Point(15, 30);
             this.cbRemote.Margin = new System.Windows.Forms.Padding(4);
             this.cbRemote.Name = "cbRemote";
-            this.cbRemote.Size = new System.Drawing.Size(298, 24);
+            this.cbRemote.Size = new System.Drawing.Size(224, 24);
             this.cbRemote.TabIndex = 3;
             // 
             // label9
             // 
             this.label9.AutoSize = true;
-            this.label9.Location = new System.Drawing.Point(100, 11);
+            this.label9.Location = new System.Drawing.Point(58, 9);
             this.label9.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label9.Name = "label9";
             this.label9.Size = new System.Drawing.Size(139, 17);
@@ -214,7 +211,7 @@
             // 
             // btnPull
             // 
-            this.btnPull.Location = new System.Drawing.Point(120, 59);
+            this.btnPull.Location = new System.Drawing.Point(73, 62);
             this.btnPull.Margin = new System.Windows.Forms.Padding(4);
             this.btnPull.Name = "btnPull";
             this.btnPull.Size = new System.Drawing.Size(104, 29);
@@ -256,7 +253,7 @@
             // 
             // btnPublish
             // 
-            this.btnPublish.Location = new System.Drawing.Point(39, 90);
+            this.btnPublish.Location = new System.Drawing.Point(24, 90);
             this.btnPublish.Margin = new System.Windows.Forms.Padding(4);
             this.btnPublish.Name = "btnPublish";
             this.btnPublish.Size = new System.Drawing.Size(101, 29);
@@ -267,11 +264,42 @@
             // 
             // panel4
             // 
+            this.panel4.Controls.Add(this.button1);
+            this.panel4.Controls.Add(this.label5);
+            this.panel4.Controls.Add(this.label4);
+            this.panel4.Controls.Add(this.comboBox1);
+            this.panel4.Controls.Add(this.textBox2);
+            this.panel4.Controls.Add(this.textBox1);
             this.panel4.Controls.Add(this.btnFinish);
-            this.panel4.Location = new System.Drawing.Point(568, 53);
+            this.panel4.Location = new System.Drawing.Point(404, 50);
             this.panel4.Name = "panel4";
-            this.panel4.Size = new System.Drawing.Size(191, 101);
+            this.panel4.Size = new System.Drawing.Size(355, 153);
             this.panel4.TabIndex = 10;
+            // 
+            // comboBox1
+            // 
+            this.comboBox1.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.comboBox1.FormattingEnabled = true;
+            this.comboBox1.Location = new System.Drawing.Point(56, 59);
+            this.comboBox1.Name = "comboBox1";
+            this.comboBox1.Size = new System.Drawing.Size(135, 24);
+            this.comboBox1.TabIndex = 7;
+            // 
+            // textBox2
+            // 
+            this.textBox2.Enabled = false;
+            this.textBox2.Location = new System.Drawing.Point(202, 59);
+            this.textBox2.Name = "textBox2";
+            this.textBox2.Size = new System.Drawing.Size(141, 22);
+            this.textBox2.TabIndex = 2;
+            // 
+            // textBox1
+            // 
+            this.textBox1.Enabled = false;
+            this.textBox1.Location = new System.Drawing.Point(202, 30);
+            this.textBox1.Name = "textBox1";
+            this.textBox1.Size = new System.Drawing.Size(141, 22);
+            this.textBox1.TabIndex = 1;
             // 
             // cbManageType
             // 
@@ -432,11 +460,11 @@
             this.panel3.Controls.Add(this.txtResult);
             this.panel3.Controls.Add(this.lblRunCommand);
             this.panel3.Controls.Add(this.label2);
-            this.panel3.Location = new System.Drawing.Point(15, 399);
+            this.panel3.Location = new System.Drawing.Point(15, 437);
             this.panel3.Margin = new System.Windows.Forms.Padding(4);
             this.panel3.Name = "panel3";
             this.panel3.Padding = new System.Windows.Forms.Padding(4);
-            this.panel3.Size = new System.Drawing.Size(786, 250);
+            this.panel3.Size = new System.Drawing.Size(786, 212);
             this.panel3.TabIndex = 11;
             this.panel3.TabStop = false;
             this.panel3.Text = "Result of shift flow command run";
@@ -465,6 +493,34 @@
             this.lblRunCommand.TabIndex = 1;
             this.lblRunCommand.Text = "-";
             // 
+            // label4
+            // 
+            this.label4.AutoSize = true;
+            this.label4.Location = new System.Drawing.Point(22, 33);
+            this.label4.Name = "label4";
+            this.label4.Size = new System.Drawing.Size(79, 17);
+            this.label4.TabIndex = 8;
+            this.label4.Text = "To develop";
+            // 
+            // label5
+            // 
+            this.label5.AutoSize = true;
+            this.label5.Location = new System.Drawing.Point(25, 62);
+            this.label5.Name = "label5";
+            this.label5.Size = new System.Drawing.Size(25, 17);
+            this.label5.TabIndex = 9;
+            this.label5.Text = "To";
+            // 
+            // button1
+            // 
+            this.button1.Location = new System.Drawing.Point(69, 100);
+            this.button1.Name = "button1";
+            this.button1.Size = new System.Drawing.Size(104, 29);
+            this.button1.TabIndex = 10;
+            this.button1.Text = "Create";
+            this.button1.UseVisualStyleBackColor = true;
+            this.button1.Click += new System.EventHandler(this.button1_Click);
+            // 
             // ShiftFlowForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(120F, 120F);
@@ -492,6 +548,7 @@
             this.pnlPull.ResumeLayout(false);
             this.pnlPull.PerformLayout();
             this.panel4.ResumeLayout(false);
+            this.panel4.PerformLayout();
             this.gbStart.ResumeLayout(false);
             this.gbStart.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pbResultCommand)).EndInit();
@@ -521,7 +578,6 @@
         private System.Windows.Forms.Panel panel1;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Label lblPrefixManage;
-        private System.Windows.Forms.Panel panel2;
         private System.Windows.Forms.Panel pnlPull;
         private System.Windows.Forms.Panel pnlManageBranch;
         private System.Windows.Forms.Label lblDebug;
@@ -540,5 +596,11 @@
         private System.Windows.Forms.ComboBox cbBaseBranch;
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.Panel panel4;
+        private System.Windows.Forms.TextBox textBox2;
+        private System.Windows.Forms.TextBox textBox1;
+        private ComboBox comboBox1;
+        private Label label4;
+        private Label label5;
+        private Button button1;
     }
 }

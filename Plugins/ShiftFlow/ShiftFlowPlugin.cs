@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using GitUIPluginInterfaces;
-using GitUIPluginInterfaces.UserControls;
 using ResourceManager;
 using ShiftFlow.Properties;
 
@@ -10,9 +9,8 @@ namespace ShiftFlow
     [Export(typeof(IGitPlugin))]
     public class ShiftFlowPlugin : GitPluginBase, IGitPluginForRepository
     {
-        private IGitModule _gitModule;
-
-        private readonly CredentialsSetting _gitHubCredentials;
+        public readonly StringSetting OAuthToken = new StringSetting("OAuth Token", "");
+        internal static ShiftFlowPlugin Instance;
 
         public ShiftFlowPlugin() : base(true)
         {
@@ -20,7 +18,10 @@ namespace ShiftFlow
             Translate();
             Icon = Resource.IconGitFlow;
 
-            _gitHubCredentials = new CredentialsSetting("GitHubCredentials", "GitHub credentials", () => _gitModule?.WorkingDir);
+            if (Instance == null)
+            {
+                Instance = this;
+            }
         }
 
         public override bool Execute(GitUIEventArgs args)
@@ -34,14 +35,7 @@ namespace ShiftFlow
 
         public override IEnumerable<ISetting> GetSettings()
         {
-            _gitHubCredentials.CustomControl = new CredentialsControl();
-            yield return _gitHubCredentials;
-        }
-
-        public override void Register(IGitUICommands gitUiCommands)
-        {
-            base.Register(gitUiCommands);
-            _gitModule = gitUiCommands.GitModule;
+            yield return OAuthToken;
         }
     }
 }

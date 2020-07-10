@@ -1,12 +1,21 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
+using System.Net;
+using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using System.Windows.Forms;
+using Git.hub;
 using GitCommands;
+using GitCommands.Utils;
 using GitExtUtils;
 using GitExtUtils.GitUI;
+using GitHub3;
 using GitUIPluginInterfaces;
 using ResourceManager;
 using ShiftFlow.Properties;
@@ -15,6 +24,14 @@ namespace ShiftFlow
 {
     public partial class ShiftFlowForm : GitExtensionsFormBase
     {
+        public string GitHubApiEndpoint => "https://api.github.com/";
+        public string GitHubEndpoint => "https://github.com/";
+
+        private Client _gitHub;
+        public static string GitHubAuthorizationRelativeUrl = "authorizations";
+
+        private Client GitHub => _gitHub ?? (_gitHub = new Client(GitHubApiEndpoint));
+
         private readonly TranslationString _ShiftFlowTooltip = new TranslationString("A good branch model for your project with Git...");
         private readonly TranslationString _loading = new TranslationString("Loading...");
         private readonly TranslationString _noBranchExist = new TranslationString("No {0} branches exist.");
@@ -22,6 +39,8 @@ namespace ShiftFlow
         private readonly GitUIEventArgs _gitUiCommands;
 
         private Dictionary<string, IReadOnlyList<string>> Branches { get; } = new Dictionary<string, IReadOnlyList<string>>();
+
+        private Dictionary<string, Repository> Repositories { get; } = new Dictionary<string, Repository>();
 
         private readonly AsyncLoader _task = new AsyncLoader();
 
@@ -103,6 +122,16 @@ namespace ShiftFlow
         {
             cbManageType.Enabled = false;
             cbBranches.DataSource = new List<string> { _loading.Text };
+            comboBox1.DataSource = new List<string> { _loading.Text };
+
+            if (!Branches.ContainsKey("production"))
+            {
+                _task.LoadAsync(() => GetBranches("production"), branches =>
+                {
+                    Branches.Add("production", branches);
+                });
+            }
+
             if (!Branches.ContainsKey(branchType))
             {
                 _task.LoadAsync(() => GetBranches(branchType), branches =>
@@ -114,6 +143,21 @@ namespace ShiftFlow
             else
             {
                 DisplayBranchData();
+            }
+
+            if (!Repositories.Any())
+            {
+                if (string.IsNullOrEmpty(OAuthToken))
+                {
+                    AskForCredentials();
+                }
+
+                GitHub.setOAuth2Token(OAuthToken);
+
+                foreach (var repository in GitHub.getRepositories())
+                {
+                    Repositories[repository.Name] = repository;
+                }
             }
         }
 
@@ -145,6 +189,8 @@ namespace ShiftFlow
 
             cbManageType.Enabled = true;
             cbBranches.DataSource = isThereABranch ? branches : new[] { string.Format(_noBranchExist.Text, branchType) };
+            comboBox1.DataSource = Branches["production"] ?? new[] { string.Format(_noBranchExist.Text, branchType) };
+            comboBox1.Enabled = true;
             cbBranches.Enabled = isThereABranch;
             if (isThereABranch && CurrentBranch != null)
             {
@@ -251,8 +297,6 @@ namespace ShiftFlow
 
         private void btnFinish_Click(object sender, EventArgs e)
         {
-            var prs = GetPullRequests(cbManageType.SelectedValue.ToString(), cbBranches.SelectedValue.ToString());
-
             var argsTags = new GitArgumentBuilder("push")
             {
                 "origin",
@@ -331,14 +375,75 @@ namespace ShiftFlow
             lblPrefixManage.Text = branchType + "/";
             if (!string.IsNullOrWhiteSpace(branchType))
             {
+                var mayHavePrs = branchType != "production";
                 pnlManageBranch.Enabled = true;
                 LoadBranches(branchType);
+                panel4.Visible = mayHavePrs;
+
+                if (mayHavePrs)
+                {
+                    RefreshPrStatus();
+                }
             }
             else
             {
                 pnlManageBranch.Enabled = false;
+                panel4.Visible = false;
             }
         }
+
+        public static string OAuthToken
+        {
+            get => ShiftFlowPlugin.Instance.OAuthToken.ValueOrDefault(ShiftFlowPlugin.Instance.Settings);
+            set
+            {
+                ShiftFlowPlugin.Instance.OAuthToken[ShiftFlowPlugin.Instance.Settings] = value;
+            }
+        }
+
+        private void RefreshPrStatus()
+        {
+            var branchType = cbManageType.SelectedValue.ToString();
+            var branchName = cbBranches.SelectedItem.ToString();
+
+            try
+            {
+                var currentRepository = Path.GetFileName(_gitUiCommands.GitModule.WorkingDir.Trim('\\'));
+                var repository = Repositories[currentRepository];
+                var prs = repository.GetPullRequests();
+                var branchPullrequests = prs.Where(p => p.Head.Ref == branchName).ToArray();
+
+                if (branchPullrequests.Length < 2)
+                {
+                    return;
+                }
+
+                var masterBranch = comboBox1.SelectedItem.ToString();
+
+                var toDevelop = branchPullrequests.FirstOrDefault(b => b.Base.Ref == "develop");
+                var toMaster = branchPullrequests.FirstOrDefault(b => b.Base.Ref == masterBranch);
+
+                textBox1.Text = $"PR #{toDevelop.Number}";
+                textBox2.Text = $"PR #{toMaster.Number}";
+            }
+            catch (Exception e)
+            {
+                MessageBox.Show(this, $"Error: {e.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private void AskForCredentials()
+        {
+            if (string.IsNullOrEmpty(OAuthToken))
+            {
+                var authorizationApiUrl = new Uri(new Uri(GitHubApiEndpoint), GitHubAuthorizationRelativeUrl).ToString();
+                using (var gitHubCredentialsPrompt = new GitHubCredentialsPrompt(authorizationApiUrl))
+                {
+                    gitHubCredentialsPrompt.ShowDialog(this);
+                }
+            }
+        }
+
         #endregion
 
         private void btnClose_Click(object sender, EventArgs e)
@@ -363,6 +468,52 @@ namespace ShiftFlow
             {
                 cbManageType.SelectedItem = branchTypes;
                 CurrentBranch = branchName;
+            }
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            var branchType = cbManageType.SelectedValue.ToString();
+            var branchName = cbBranches.SelectedItem.ToString();
+
+            try
+            {
+                var currentRepository = Path.GetFileName(_gitUiCommands.GitModule.WorkingDir.Trim('\\'));
+                var repository = Repositories[currentRepository];
+                var prs = repository.GetPullRequests();
+                var branchPullrequests = prs.Where(p => p.Head.Ref == branchName).ToArray();
+
+                PullRequest toDevelop = null;
+                PullRequest toMaster = null;
+                var masterBranch = comboBox1.SelectedItem.ToString();
+                if (branchPullrequests.Length > 1)
+                {
+                    return;
+                }
+                else
+                {
+                    toDevelop = repository.CreatePullRequest(branchName, "develop", "first title 1", "body 1");
+                    toMaster = repository.CreatePullRequest(branchName, masterBranch, "first title 2", "body 2");
+                }
+
+                textBox1.Text = $"PR #{toDevelop.Number}";
+                textBox2.Text = $"PR #{toMaster.Number}";
+            }
+            catch (Exception exception)
+            {
+                MessageBox.Show(this, $"Error: {exception.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+    }
+
+    internal static class GitHubLoginInfo
+    {
+        public static string OAuthToken
+        {
+            get => ShiftFlowPlugin.Instance.OAuthToken.ValueOrDefault(ShiftFlowPlugin.Instance.Settings);
+            set
+            {
+                ShiftFlowPlugin.Instance.OAuthToken[ShiftFlowPlugin.Instance.Settings] = value;
             }
         }
     }
