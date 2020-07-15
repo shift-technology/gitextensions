@@ -49,6 +49,7 @@ namespace ShiftFlow
             this.label1 = new System.Windows.Forms.Label();
             this.btnPublish = new System.Windows.Forms.Button();
             this.panel4 = new System.Windows.Forms.Panel();
+            this.button2 = new System.Windows.Forms.Button();
             this.button1 = new System.Windows.Forms.Button();
             this.label5 = new System.Windows.Forms.Label();
             this.label4 = new System.Windows.Forms.Label();
@@ -142,12 +143,12 @@ namespace ShiftFlow
             // 
             // btnFinish
             // 
-            this.btnFinish.Location = new System.Drawing.Point(324, 100);
+            this.btnFinish.Location = new System.Drawing.Point(414, 56);
             this.btnFinish.Margin = new System.Windows.Forms.Padding(4);
             this.btnFinish.Name = "btnFinish";
-            this.btnFinish.Size = new System.Drawing.Size(102, 29);
+            this.btnFinish.Size = new System.Drawing.Size(74, 29);
             this.btnFinish.TabIndex = 0;
-            this.btnFinish.Text = "Finish";
+            this.btnFinish.Text = "Merge";
             this.btnFinish.UseVisualStyleBackColor = true;
             this.btnFinish.Click += new System.EventHandler(this.btnFinish_Click);
             // 
@@ -184,7 +185,7 @@ namespace ShiftFlow
             this.pnlPull.Controls.Add(this.cbRemote);
             this.pnlPull.Controls.Add(this.label9);
             this.pnlPull.Controls.Add(this.btnPull);
-            this.pnlPull.Location = new System.Drawing.Point(148, 50);
+            this.pnlPull.Location = new System.Drawing.Point(112, 53);
             this.pnlPull.Margin = new System.Windows.Forms.Padding(4);
             this.pnlPull.Name = "pnlPull";
             this.pnlPull.Size = new System.Drawing.Size(149, 153);
@@ -254,7 +255,7 @@ namespace ShiftFlow
             // 
             // btnPublish
             // 
-            this.btnPublish.Location = new System.Drawing.Point(24, 90);
+            this.btnPublish.Location = new System.Drawing.Point(3, 100);
             this.btnPublish.Margin = new System.Windows.Forms.Padding(4);
             this.btnPublish.Name = "btnPublish";
             this.btnPublish.Size = new System.Drawing.Size(101, 29);
@@ -265,6 +266,7 @@ namespace ShiftFlow
             // 
             // panel4
             // 
+            this.panel4.Controls.Add(this.button2);
             this.panel4.Controls.Add(this.button1);
             this.panel4.Controls.Add(this.label5);
             this.panel4.Controls.Add(this.label4);
@@ -272,14 +274,24 @@ namespace ShiftFlow
             this.panel4.Controls.Add(this.textBox2);
             this.panel4.Controls.Add(this.textBox1);
             this.panel4.Controls.Add(this.btnFinish);
-            this.panel4.Location = new System.Drawing.Point(304, 50);
+            this.panel4.Location = new System.Drawing.Point(268, 53);
             this.panel4.Name = "panel4";
-            this.panel4.Size = new System.Drawing.Size(455, 153);
+            this.panel4.Size = new System.Drawing.Size(491, 153);
             this.panel4.TabIndex = 10;
+            // 
+            // button2
+            // 
+            this.button2.Location = new System.Drawing.Point(413, 27);
+            this.button2.Name = "button2";
+            this.button2.Size = new System.Drawing.Size(75, 29);
+            this.button2.TabIndex = 11;
+            this.button2.Text = "Merge";
+            this.button2.UseVisualStyleBackColor = true;
+            this.button2.Click += new System.EventHandler(this.button2_Click);
             // 
             // button1
             // 
-            this.button1.Location = new System.Drawing.Point(118, 100);
+            this.button1.Location = new System.Drawing.Point(87, 100);
             this.button1.Name = "button1";
             this.button1.Size = new System.Drawing.Size(104, 29);
             this.button1.TabIndex = 10;
@@ -290,7 +302,7 @@ namespace ShiftFlow
             // label5
             // 
             this.label5.AutoSize = true;
-            this.label5.Location = new System.Drawing.Point(25, 62);
+            this.label5.Location = new System.Drawing.Point(3, 62);
             this.label5.Name = "label5";
             this.label5.Size = new System.Drawing.Size(25, 17);
             this.label5.TabIndex = 9;
@@ -299,7 +311,7 @@ namespace ShiftFlow
             // label4
             // 
             this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(22, 33);
+            this.label4.Location = new System.Drawing.Point(3, 33);
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(79, 17);
             this.label4.TabIndex = 8;
@@ -309,7 +321,7 @@ namespace ShiftFlow
             // 
             this.comboBox1.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.comboBox1.FormattingEnabled = true;
-            this.comboBox1.Location = new System.Drawing.Point(56, 59);
+            this.comboBox1.Location = new System.Drawing.Point(34, 59);
             this.comboBox1.Name = "comboBox1";
             this.comboBox1.Size = new System.Drawing.Size(240, 24);
             this.comboBox1.TabIndex = 7;
@@ -317,17 +329,17 @@ namespace ShiftFlow
             // textBox2
             // 
             this.textBox2.Enabled = false;
-            this.textBox2.Location = new System.Drawing.Point(302, 59);
+            this.textBox2.Location = new System.Drawing.Point(285, 59);
             this.textBox2.Name = "textBox2";
-            this.textBox2.Size = new System.Drawing.Size(141, 22);
+            this.textBox2.Size = new System.Drawing.Size(122, 22);
             this.textBox2.TabIndex = 2;
             // 
             // textBox1
             // 
             this.textBox1.Enabled = false;
-            this.textBox1.Location = new System.Drawing.Point(302, 30);
+            this.textBox1.Location = new System.Drawing.Point(284, 30);
             this.textBox1.Name = "textBox1";
-            this.textBox1.Size = new System.Drawing.Size(141, 22);
+            this.textBox1.Size = new System.Drawing.Size(123, 22);
             this.textBox1.TabIndex = 1;
             // 
             // cbManageType
@@ -613,5 +625,6 @@ namespace ShiftFlow
         private Label label4;
         private Label label5;
         private Button button1;
+        private Button button2;
     }
 }

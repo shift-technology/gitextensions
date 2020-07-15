@@ -199,6 +199,7 @@ namespace ShiftFlow
             }
 
             btnFinish.Enabled = isThereABranch;
+            button2.Enabled = isThereABranch;
             btnPublish.Enabled = isThereABranch;
             btnPull.Enabled = isThereABranch;
             pnlPull.Enabled = true;
@@ -297,13 +298,12 @@ namespace ShiftFlow
 
         private void btnFinish_Click(object sender, EventArgs e)
         {
-            if (string.IsNullOrEmpty(textBox1.Text) || string.IsNullOrEmpty(textBox2.Text))
+            if (string.IsNullOrEmpty(textBox2.Text))
             {
-                MessageBox.Show(this, $"The pull requests have not been created", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show(this, $"The pull request has not been created", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
-            var toDevelopNumber = int.Parse(textBox1.Text.Remove(0, 4));
             var toMasterNumber = int.Parse(textBox2.Text.Remove(0, 4));
 
             var branchName = cbBranches.SelectedItem.ToString();
@@ -313,24 +313,13 @@ namespace ShiftFlow
                 var currentRepository = Path.GetFileName(_gitUiCommands.GitModule.WorkingDir.Trim('\\'));
                 var repository = Repositories[currentRepository];
 
-                PullRequest toDevelop = repository.GetPullRequest(toDevelopNumber);
                 PullRequest toMaster = repository.GetPullRequest(toMasterNumber);
 
-                var success1 = toDevelop.Merge(branchName);
                 var success2 = toMaster.Merge(branchName);
 
-                if (!success1 || !success2)
+                if (!success2)
                 {
-                    var bodyMessage = string.Empty;
-                    if (!success1)
-                    {
-                        bodyMessage += $"Failed to merge {branchName} into develop\r\n";
-                    }
-
-                    if (!success2)
-                    {
-                        bodyMessage += $"Failed to merge {branchName} into master\r\n";
-                    }
+                    var bodyMessage = $"Failed to merge {branchName} into master\r\n";
 
                     MessageBox.Show(this, bodyMessage, "Failed merge", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 }
@@ -486,6 +475,7 @@ namespace ShiftFlow
             try
             {
                 button1.Enabled = false;
+                button2.Enabled = false;
                 btnFinish.Enabled = false;
                 comboBox1.Enabled = true;
                 textBox1.Text = string.Empty;
@@ -526,11 +516,13 @@ namespace ShiftFlow
                     textBox1.Text = $"PR #{toDevelop.Number}";
                     textBox2.Text = $"PR #{toMaster.Number}";
                     button1.Enabled = false;
+                    button2.Enabled = true;
                     btnFinish.Enabled = true;
                 }
                 else
                 {
                     button1.Enabled = true;
+                    button2.Enabled = false;
                     btnFinish.Enabled = false;
                 }
             }
@@ -572,6 +564,47 @@ namespace ShiftFlow
             {
                 MessageBox.Show(this, $"Error: {exception.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
+        }
+
+        private void button2_Click(object sender, EventArgs e)
+        {
+            if (string.IsNullOrEmpty(textBox1.Text))
+            {
+                MessageBox.Show(this, $"The pull request has not been created", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            var toDevelopNumber = int.Parse(textBox1.Text.Remove(0, 4));
+
+            var branchName = cbBranches.SelectedItem.ToString();
+
+            try
+            {
+                var currentRepository = Path.GetFileName(_gitUiCommands.GitModule.WorkingDir.Trim('\\'));
+                var repository = Repositories[currentRepository];
+
+                PullRequest toDevelop = repository.GetPullRequest(toDevelopNumber);
+
+                var success1 = toDevelop.Merge(branchName);
+
+                if (!success1)
+                {
+                    var bodyMessage = $"Failed to merge {branchName} into develop\r\n";
+
+                    MessageBox.Show(this, bodyMessage, "Failed merge", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                }
+            }
+            catch (Exception exception)
+            {
+                MessageBox.Show(this, $"Error: {exception.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+
+            var argsTags = new GitArgumentBuilder("push")
+            {
+                "origin",
+                "--tags"
+            };
+            RunCommand(argsTags);
         }
     }
 
