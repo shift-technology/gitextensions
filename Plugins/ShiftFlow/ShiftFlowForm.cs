@@ -88,7 +88,7 @@ namespace ShiftFlow
             btnPull.Enabled = btnPublish.Enabled = remotes.Any();
 
             cbType.DataSource = BranchTypes;
-            var types = new List<string> { string.Empty };
+            var types = new List<string>();
             types.AddRange(BranchTypes);
             cbManageType.DataSource = types;
 
@@ -214,17 +214,22 @@ namespace ShiftFlow
 
             if (manageBaseBranch)
             {
-                cbBaseBranch.DataSource = GetLocalBranches();
+                cbBaseBranch.DataSource = GetRemoteBranches();
             }
 
-            List<string> GetLocalBranches()
+            List<string> GetRemoteBranches()
             {
-                var prefix = Branch.production.ToString("G") + "/";
-                var args = new GitArgumentBuilder("branch");
-                return _gitUiCommands.GitModule
-                    .GitExecutable.GetOutput(args)
+                var pattern = $"origin/{Branch.production:G}/*";
+                var args = new GitArgumentBuilder("branch")
+                    {
+                        "-r",
+                        "--list",
+                        pattern
+                    };
+                var output = _gitUiCommands.GitModule.GitExecutable.GetOutput(args);
+                return output
                     .Split(new[] { '\n' }, StringSplitOptions.RemoveEmptyEntries).Select(e => e.Trim('*', ' ', '\n', '\r'))
-                    .Where(b => b.StartsWith(prefix))
+                    .Select(b => b.Remove(0, "origin/".Length))
                     .ToList();
             }
         }
@@ -236,10 +241,11 @@ namespace ShiftFlow
         {
             var branchType = cbType.SelectedValue.ToString();
             var baseBranch = GetBaseBranch();
+            var branchName = $"{branchType}/{txtBranchName.Text}";
             var args = new GitArgumentBuilder("checkout")
                     {
                         "-b",
-                        $"{branchType}/{txtBranchName.Text}",
+                        branchName,
                         baseBranch
                     };
 
@@ -261,6 +267,20 @@ namespace ShiftFlow
                     Branches.Remove(branchType);
                 }
             }
+
+            var args2 = new GitArgumentBuilder("push")
+                    {
+                        "-u",
+                        $"origin",
+                        branchName
+                    };
+
+            if (args2 == null)
+            {
+                return;
+            }
+
+            RunCommand(args2);
         }
 
         private string GetBaseBranch()
@@ -269,7 +289,7 @@ namespace ShiftFlow
 
             if (branchType == Branch.hotfix.ToString("G"))
             {
-                return $"{Branch.production}/{cbBaseBranch.SelectedItem}";
+                return $"{cbBaseBranch.SelectedItem}";
             }
 
             return "develop";
@@ -394,6 +414,12 @@ namespace ShiftFlow
         {
             lblPrefixName.Text = cbType.SelectedValue + "/";
             LoadBaseBranches();
+            ModifyNamingConventionTextBox();
+        }
+
+        private void ModifyNamingConventionTextBox()
+        {
+           // throw new NotImplementedException();
         }
 
         private void cbManageType_SelectedValueChanged(object sender, EventArgs e)
