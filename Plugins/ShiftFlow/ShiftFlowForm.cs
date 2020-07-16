@@ -474,7 +474,7 @@ namespace ShiftFlow
         {
             try
             {
-                button1.Enabled = false;
+                button1.Enabled = true;
                 button2.Enabled = false;
                 btnFinish.Enabled = false;
                 comboBox1.Enabled = true;
@@ -506,24 +506,22 @@ namespace ShiftFlow
                 var prs = repository.GetPullRequests();
                 var branchPullrequests = prs.Where(p => p.Head.Ref == branchName).ToArray();
 
-                if (branchPullrequests.Length == 2)
+                foreach (var branchPullrequest in branchPullrequests)
                 {
-                    var toDevelop = branchPullrequests.FirstOrDefault(b => b.Base.Ref == "develop");
-                    var toMaster = branchPullrequests.FirstOrDefault(b => b.Base.Ref != "develop");
-                    comboBox1.SelectedItem = toMaster.Base.Ref;
-                    comboBox1.Enabled = false;
-
-                    textBox1.Text = $"PR #{toDevelop.Number}";
-                    textBox2.Text = $"PR #{toMaster.Number}";
+                    var isDevelop = branchPullrequest.Base.Ref == "develop";
                     button1.Enabled = false;
-                    button2.Enabled = true;
-                    btnFinish.Enabled = true;
-                }
-                else
-                {
-                    button1.Enabled = true;
-                    button2.Enabled = false;
-                    btnFinish.Enabled = false;
+                    if (isDevelop)
+                    {
+                        textBox1.Text = $"PR #{branchPullrequest.Number}";
+                        button2.Enabled = true;
+                    }
+                    else
+                    {
+                        textBox2.Text = $"PR #{branchPullrequest.Number}";
+                        btnFinish.Enabled = true;
+                        comboBox1.SelectedItem = branchPullrequest.Base.Ref;
+                        comboBox1.Enabled = false;
+                    }
                 }
             }
             catch (Exception exception)
