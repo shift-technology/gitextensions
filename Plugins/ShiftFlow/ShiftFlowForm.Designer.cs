@@ -62,6 +62,7 @@ namespace ShiftFlow
             this.label10 = new System.Windows.Forms.Label();
             this.lblPrefixName = new System.Windows.Forms.Label();
             this.gbStart = new System.Windows.Forms.GroupBox();
+            this.textBox3 = new System.Windows.Forms.TextBox();
             this.label6 = new System.Windows.Forms.Label();
             this.lblDebug = new System.Windows.Forms.Label();
             this.lnkShiftFlow = new System.Windows.Forms.LinkLabel();
@@ -75,7 +76,6 @@ namespace ShiftFlow
             this.panel3 = new System.Windows.Forms.GroupBox();
             this.txtResult = new System.Windows.Forms.TextBox();
             this.lblRunCommand = new System.Windows.Forms.Label();
-            this.textBox3 = new System.Windows.Forms.TextBox();
             this.pnlBasedOn.SuspendLayout();
             this.gbManage.SuspendLayout();
             this.pnlManageBranch.SuspendLayout();
@@ -184,13 +184,14 @@ namespace ShiftFlow
             // 
             // pnlPull
             // 
+            this.pnlPull.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
             this.pnlPull.Controls.Add(this.cbRemote);
             this.pnlPull.Controls.Add(this.label9);
             this.pnlPull.Controls.Add(this.btnPull);
             this.pnlPull.Location = new System.Drawing.Point(112, 53);
             this.pnlPull.Margin = new System.Windows.Forms.Padding(4);
             this.pnlPull.Name = "pnlPull";
-            this.pnlPull.Size = new System.Drawing.Size(149, 153);
+            this.pnlPull.Size = new System.Drawing.Size(154, 149);
             this.pnlPull.TabIndex = 6;
             // 
             // cbRemote
@@ -268,6 +269,7 @@ namespace ShiftFlow
             // 
             // panel4
             // 
+            this.panel4.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
             this.panel4.Controls.Add(this.button2);
             this.panel4.Controls.Add(this.button1);
             this.panel4.Controls.Add(this.label5);
@@ -417,6 +419,16 @@ namespace ShiftFlow
             this.gbStart.TabStop = false;
             this.gbStart.Text = "Start branch:";
             // 
+            // textBox3
+            // 
+            this.textBox3.BackColor = System.Drawing.SystemColors.Control;
+            this.textBox3.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.textBox3.Location = new System.Drawing.Point(146, 38);
+            this.textBox3.Multiline = true;
+            this.textBox3.Name = "textBox3";
+            this.textBox3.Size = new System.Drawing.Size(627, 22);
+            this.textBox3.TabIndex = 6;
+            // 
             // label6
             // 
             this.label6.AutoSize = true;
@@ -533,7 +545,7 @@ namespace ShiftFlow
             this.txtResult.Name = "txtResult";
             this.txtResult.ReadOnly = true;
             this.txtResult.ScrollBars = System.Windows.Forms.ScrollBars.Both;
-            this.txtResult.Size = new System.Drawing.Size(771, 202);
+            this.txtResult.Size = new System.Drawing.Size(771, 130);
             this.txtResult.TabIndex = 2;
             this.txtResult.Text = " -";
             // 
@@ -546,16 +558,6 @@ namespace ShiftFlow
             this.lblRunCommand.Size = new System.Drawing.Size(13, 17);
             this.lblRunCommand.TabIndex = 1;
             this.lblRunCommand.Text = "-";
-            // 
-            // textBox3
-            // 
-            this.textBox3.BackColor = System.Drawing.SystemColors.Control;
-            this.textBox3.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            this.textBox3.Location = new System.Drawing.Point(146, 38);
-            this.textBox3.Multiline = true;
-            this.textBox3.Name = "textBox3";
-            this.textBox3.Size = new System.Drawing.Size(627, 22);
-            this.textBox3.TabIndex = 6;
             // 
             // ShiftFlowForm
             // 

@@ -259,15 +259,7 @@ namespace ShiftFlow
             if (RunCommand(args))
             {
                 txtBranchName.Text = string.Empty;
-                if (cbManageType.SelectedValue.ToString() == branchType)
-                {
-                    Branches.Remove(branchType);
-                    LoadBranches(branchType);
-                }
-                else
-                {
-                    Branches.Remove(branchType);
-                }
+                LoadBranches(branchType);
             }
 
             var args2 = new GitArgumentBuilder("push")
