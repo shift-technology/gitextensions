@@ -124,19 +124,13 @@ namespace ShiftFlow
             cbBranches.DataSource = new List<string> { _loading.Text };
             comboBox1.DataSource = new List<string> { _loading.Text };
 
-            if (!Branches.ContainsKey("production"))
+            if (!Branches.Any())
             {
-                _task.LoadAsync(() => GetBranches("production"), branches =>
+                _task.LoadAsync(() => GetRemoteProductionBranches().Union(GetBranches("hotfix")).Union(GetBranches("release")), branches =>
                 {
-                    Branches.Add("production", branches);
-                });
-            }
-
-            if (!Branches.ContainsKey(branchType))
-            {
-                _task.LoadAsync(() => GetBranches(branchType), branches =>
-                {
-                    Branches.Add(branchType, branches);
+                    Branches.Add("production", branches.Where(b => b.StartsWith("production")).ToList());
+                    Branches.Add("release", branches.Where(b => b.StartsWith("release")).ToList());
+                    Branches.Add("hotfix", branches.Where(b => b.StartsWith("hotfix")).ToList());
                     DisplayBranchData();
                 });
             }
@@ -189,7 +183,15 @@ namespace ShiftFlow
 
             cbManageType.Enabled = true;
             cbBranches.DataSource = isThereABranch ? branches : new[] { string.Format(_noBranchExist.Text, branchType) };
-            comboBox1.DataSource = Branches["production"] ?? new[] { string.Format(_noBranchExist.Text, branchType) };
+            if (Branches.ContainsKey("production"))
+            {
+                comboBox1.DataSource = Branches["production"];
+            }
+            else
+            {
+                comboBox1.DataSource = new[] { string.Format(_noBranchExist.Text, "production") };
+            }
+
             comboBox1.Enabled = true;
             cbBranches.Enabled = isThereABranch;
             if (isThereABranch && CurrentBranch != null)
@@ -214,24 +216,24 @@ namespace ShiftFlow
 
             if (manageBaseBranch)
             {
-                cbBaseBranch.DataSource = GetRemoteBranches();
+                cbBaseBranch.DataSource = GetRemoteProductionBranches();
             }
+        }
 
-            List<string> GetRemoteBranches()
-            {
-                var pattern = $"origin/{Branch.production:G}/*";
-                var args = new GitArgumentBuilder("branch")
+        private List<string> GetRemoteProductionBranches()
+        {
+            var pattern = $"origin/{Branch.production:G}/*";
+            var args = new GitArgumentBuilder("branch")
                     {
                         "-r",
                         "--list",
                         pattern
                     };
-                var output = _gitUiCommands.GitModule.GitExecutable.GetOutput(args);
-                return output
-                    .Split(new[] { '\n' }, StringSplitOptions.RemoveEmptyEntries).Select(e => e.Trim('*', ' ', '\n', '\r'))
-                    .Select(b => b.Remove(0, "origin/".Length))
-                    .ToList();
-            }
+            var output = _gitUiCommands.GitModule.GitExecutable.GetOutput(args);
+            return output
+                .Split(new[] { '\n' }, StringSplitOptions.RemoveEmptyEntries).Select(e => e.Trim('*', ' ', '\n', '\r'))
+                .Select(b => b.Remove(0, "origin/".Length))
+                .ToList();
         }
 
         #endregion
