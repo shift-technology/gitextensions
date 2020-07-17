@@ -502,7 +502,7 @@ namespace ShiftFlow
                 textBox2.Text = string.Empty;
 
                 var branchType = cbManageType.SelectedValue.ToString();
-                var branchName = cbBranches.SelectedItem.ToString();
+                var branchName = cbBranches.SelectedItem?.ToString();
 
                 if (branchName == _loading.Text || string.IsNullOrEmpty(branchName))
                 {
@@ -514,7 +514,7 @@ namespace ShiftFlow
                     return;
                 }
 
-                var masterBranch = comboBox1.SelectedItem.ToString();
+                var masterBranch = comboBox1.SelectedItem?.ToString();
 
                 if (string.IsNullOrEmpty(masterBranch) || masterBranch == _loading.Text)
                 {
