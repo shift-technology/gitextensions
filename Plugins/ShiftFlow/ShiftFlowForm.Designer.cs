@@ -40,14 +40,8 @@ namespace ShiftFlow
             this.btnFinish = new System.Windows.Forms.Button();
             this.gbManage = new System.Windows.Forms.GroupBox();
             this.pnlManageBranch = new System.Windows.Forms.Panel();
-            this.pnlPull = new System.Windows.Forms.Panel();
-            this.cbRemote = new System.Windows.Forms.ComboBox();
-            this.label9 = new System.Windows.Forms.Label();
-            this.btnPull = new System.Windows.Forms.Button();
-            this.panel1 = new System.Windows.Forms.Panel();
             this.lblPrefixManage = new System.Windows.Forms.Label();
             this.label1 = new System.Windows.Forms.Label();
-            this.btnPublish = new System.Windows.Forms.Button();
             this.panel4 = new System.Windows.Forms.Panel();
             this.button2 = new System.Windows.Forms.Button();
             this.button1 = new System.Windows.Forms.Button();
@@ -79,7 +73,6 @@ namespace ShiftFlow
             this.pnlBasedOn.SuspendLayout();
             this.gbManage.SuspendLayout();
             this.pnlManageBranch.SuspendLayout();
-            this.pnlPull.SuspendLayout();
             this.panel4.SuspendLayout();
             this.gbStart.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pbResultCommand)).BeginInit();
@@ -145,7 +138,7 @@ namespace ShiftFlow
             // 
             // btnFinish
             // 
-            this.btnFinish.Location = new System.Drawing.Point(414, 56);
+            this.btnFinish.Location = new System.Drawing.Point(665, 56);
             this.btnFinish.Margin = new System.Windows.Forms.Padding(4);
             this.btnFinish.Name = "btnFinish";
             this.btnFinish.Size = new System.Drawing.Size(74, 29);
@@ -169,71 +162,15 @@ namespace ShiftFlow
             // 
             // pnlManageBranch
             // 
-            this.pnlManageBranch.Controls.Add(this.pnlPull);
-            this.pnlManageBranch.Controls.Add(this.panel1);
             this.pnlManageBranch.Controls.Add(this.lblPrefixManage);
             this.pnlManageBranch.Controls.Add(this.label1);
             this.pnlManageBranch.Controls.Add(this.cbBranches);
-            this.pnlManageBranch.Controls.Add(this.btnPublish);
             this.pnlManageBranch.Controls.Add(this.panel4);
             this.pnlManageBranch.Location = new System.Drawing.Point(12, 38);
             this.pnlManageBranch.Margin = new System.Windows.Forms.Padding(4);
             this.pnlManageBranch.Name = "pnlManageBranch";
             this.pnlManageBranch.Size = new System.Drawing.Size(762, 206);
             this.pnlManageBranch.TabIndex = 7;
-            // 
-            // pnlPull
-            // 
-            this.pnlPull.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
-            this.pnlPull.Controls.Add(this.cbRemote);
-            this.pnlPull.Controls.Add(this.label9);
-            this.pnlPull.Controls.Add(this.btnPull);
-            this.pnlPull.Location = new System.Drawing.Point(112, 53);
-            this.pnlPull.Margin = new System.Windows.Forms.Padding(4);
-            this.pnlPull.Name = "pnlPull";
-            this.pnlPull.Size = new System.Drawing.Size(154, 149);
-            this.pnlPull.TabIndex = 6;
-            // 
-            // cbRemote
-            // 
-            this.cbRemote.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.cbRemote.FormattingEnabled = true;
-            this.cbRemote.Location = new System.Drawing.Point(4, 30);
-            this.cbRemote.Margin = new System.Windows.Forms.Padding(4);
-            this.cbRemote.Name = "cbRemote";
-            this.cbRemote.Size = new System.Drawing.Size(139, 24);
-            this.cbRemote.TabIndex = 3;
-            // 
-            // label9
-            // 
-            this.label9.AutoSize = true;
-            this.label9.Location = new System.Drawing.Point(4, 9);
-            this.label9.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.label9.Name = "label9";
-            this.label9.Size = new System.Drawing.Size(139, 17);
-            this.label9.TabIndex = 1;
-            this.label9.Text = "Remote to pull from :";
-            // 
-            // btnPull
-            // 
-            this.btnPull.Location = new System.Drawing.Point(19, 62);
-            this.btnPull.Margin = new System.Windows.Forms.Padding(4);
-            this.btnPull.Name = "btnPull";
-            this.btnPull.Size = new System.Drawing.Size(104, 29);
-            this.btnPull.TabIndex = 0;
-            this.btnPull.Text = "Pull";
-            this.btnPull.UseVisualStyleBackColor = true;
-            this.btnPull.Click += new System.EventHandler(this.btnPull_Click);
-            // 
-            // panel1
-            // 
-            this.panel1.BackColor = System.Drawing.SystemColors.ActiveCaption;
-            this.panel1.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
-            this.panel1.Location = new System.Drawing.Point(189, 68);
-            this.panel1.Margin = new System.Windows.Forms.Padding(4);
-            this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size(0, 86);
-            this.panel1.TabIndex = 4;
             // 
             // lblPrefixManage
             // 
@@ -256,17 +193,6 @@ namespace ShiftFlow
             this.label1.TabIndex = 1;
             this.label1.Text = "branch:";
             // 
-            // btnPublish
-            // 
-            this.btnPublish.Location = new System.Drawing.Point(3, 100);
-            this.btnPublish.Margin = new System.Windows.Forms.Padding(4);
-            this.btnPublish.Name = "btnPublish";
-            this.btnPublish.Size = new System.Drawing.Size(101, 29);
-            this.btnPublish.TabIndex = 0;
-            this.btnPublish.Text = "Publish";
-            this.btnPublish.UseVisualStyleBackColor = true;
-            this.btnPublish.Click += new System.EventHandler(this.btnPublish_Click);
-            // 
             // panel4
             // 
             this.panel4.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
@@ -278,14 +204,14 @@ namespace ShiftFlow
             this.panel4.Controls.Add(this.textBox2);
             this.panel4.Controls.Add(this.textBox1);
             this.panel4.Controls.Add(this.btnFinish);
-            this.panel4.Location = new System.Drawing.Point(268, 53);
+            this.panel4.Location = new System.Drawing.Point(5, 41);
             this.panel4.Name = "panel4";
-            this.panel4.Size = new System.Drawing.Size(491, 153);
+            this.panel4.Size = new System.Drawing.Size(754, 162);
             this.panel4.TabIndex = 10;
             // 
             // button2
             // 
-            this.button2.Location = new System.Drawing.Point(413, 27);
+            this.button2.Location = new System.Drawing.Point(665, 21);
             this.button2.Name = "button2";
             this.button2.Size = new System.Drawing.Size(75, 29);
             this.button2.TabIndex = 11;
@@ -295,9 +221,9 @@ namespace ShiftFlow
             // 
             // button1
             // 
-            this.button1.Location = new System.Drawing.Point(87, 100);
+            this.button1.Location = new System.Drawing.Point(126, 100);
             this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(104, 29);
+            this.button1.Size = new System.Drawing.Size(134, 29);
             this.button1.TabIndex = 10;
             this.button1.Text = "Create";
             this.button1.UseVisualStyleBackColor = true;
@@ -327,23 +253,23 @@ namespace ShiftFlow
             this.comboBox1.FormattingEnabled = true;
             this.comboBox1.Location = new System.Drawing.Point(34, 59);
             this.comboBox1.Name = "comboBox1";
-            this.comboBox1.Size = new System.Drawing.Size(240, 24);
+            this.comboBox1.Size = new System.Drawing.Size(343, 24);
             this.comboBox1.TabIndex = 7;
             // 
             // textBox2
             // 
             this.textBox2.Enabled = false;
-            this.textBox2.Location = new System.Drawing.Point(285, 59);
+            this.textBox2.Location = new System.Drawing.Point(383, 59);
             this.textBox2.Name = "textBox2";
-            this.textBox2.Size = new System.Drawing.Size(122, 22);
+            this.textBox2.Size = new System.Drawing.Size(276, 22);
             this.textBox2.TabIndex = 2;
             // 
             // textBox1
             // 
             this.textBox1.Enabled = false;
-            this.textBox1.Location = new System.Drawing.Point(284, 30);
+            this.textBox1.Location = new System.Drawing.Point(383, 24);
             this.textBox1.Name = "textBox1";
-            this.textBox1.Size = new System.Drawing.Size(123, 22);
+            this.textBox1.Size = new System.Drawing.Size(276, 22);
             this.textBox1.TabIndex = 1;
             // 
             // cbManageType
@@ -583,8 +509,6 @@ namespace ShiftFlow
             this.gbManage.ResumeLayout(false);
             this.pnlManageBranch.ResumeLayout(false);
             this.pnlManageBranch.PerformLayout();
-            this.pnlPull.ResumeLayout(false);
-            this.pnlPull.PerformLayout();
             this.panel4.ResumeLayout(false);
             this.panel4.PerformLayout();
             this.gbStart.ResumeLayout(false);
@@ -614,19 +538,13 @@ namespace ShiftFlow
         private System.Windows.Forms.Button btnFinish;
         private System.Windows.Forms.GroupBox gbManage;
         private System.Windows.Forms.Button btnClose;
-        private System.Windows.Forms.ComboBox cbRemote;
-        private System.Windows.Forms.Label label9;
-        private System.Windows.Forms.Button btnPull;
-        private System.Windows.Forms.Button btnPublish;
         private System.Windows.Forms.ComboBox cbType;
         private System.Windows.Forms.Label label10;
         private System.Windows.Forms.Label lblPrefixName;
         private System.Windows.Forms.GroupBox gbStart;
         private System.Windows.Forms.ComboBox cbManageType;
-        private System.Windows.Forms.Panel panel1;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Label lblPrefixManage;
-        private System.Windows.Forms.Panel pnlPull;
         private System.Windows.Forms.Panel pnlManageBranch;
         private System.Windows.Forms.Label lblDebug;
         private System.Windows.Forms.LinkLabel lnkShiftFlow;

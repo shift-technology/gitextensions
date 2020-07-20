@@ -83,10 +83,6 @@ namespace ShiftFlow
             lblCaptionHead.Visible = true;
             lblHead.Visible = true;
 
-            var remotes = _gitUiCommands.GitModule.GetRemoteNames();
-            cbRemote.DataSource = remotes;
-            btnPull.Enabled = btnPublish.Enabled = remotes.Any();
-
             cbType.DataSource = BranchTypes;
             var types = new List<string>();
             types.AddRange(BranchTypes);
@@ -202,9 +198,6 @@ namespace ShiftFlow
 
             btnFinish.Enabled = isThereABranch;
             button2.Enabled = isThereABranch;
-            btnPublish.Enabled = isThereABranch;
-            btnPull.Enabled = isThereABranch;
-            pnlPull.Enabled = true;
         }
 
         private void LoadBaseBranches()
@@ -287,27 +280,6 @@ namespace ShiftFlow
             }
 
             return "develop";
-        }
-
-        private void btnPublish_Click(object sender, EventArgs e)
-        {
-            var args = new GitArgumentBuilder("push")
-            {
-                "origin",
-                cbBranches.SelectedValue.ToString(),
-                "-u"
-            };
-            RunCommand(args);
-        }
-
-        private void btnPull_Click(object sender, EventArgs e)
-        {
-            var args = new GitArgumentBuilder("pull")
-            {
-                "origin",
-                "--rebase"
-            };
-            RunCommand(args);
         }
 
         private void btnFinish_Click(object sender, EventArgs e)
@@ -413,7 +385,24 @@ namespace ShiftFlow
 
         private void ModifyNamingConventionTextBox()
         {
-           // throw new NotImplementedException();
+            var branchType = cbType.SelectedValue.ToString();
+
+            textBox3.Text = "";
+
+            if (branchType == "production")
+            {
+                textBox3.Text = "(luke|force|projectname)_(tenant|target)[_v{version}]";
+            }
+
+            if (branchType == "hotfix")
+            {
+                textBox3.Text = "(luke|force|projectname)_(context)";
+            }
+
+            if (branchType == "release")
+            {
+                textBox3.Text = "(luke|force|projectname)_(tenant|target)_(YYYYmmdd)";
+            }
         }
 
         private void cbManageType_SelectedValueChanged(object sender, EventArgs e)
