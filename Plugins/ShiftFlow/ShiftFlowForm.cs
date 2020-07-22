@@ -232,11 +232,9 @@ namespace ShiftFlow
         #endregion
 
         #region Run ShiftFlow commands
-        private void btnStartBranch_Click(object sender, EventArgs e)
+        private bool CreateBranch(string branchType, string branchName)
         {
-            var branchType = cbType.SelectedValue.ToString();
             var baseBranch = GetBaseBranch();
-            var branchName = $"{branchType}/{txtBranchName.Text}";
             var args = new GitArgumentBuilder("checkout")
                     {
                         "-b",
@@ -246,28 +244,141 @@ namespace ShiftFlow
 
             if (args == null)
             {
-                return;
+                return false;
             }
 
             if (RunCommand(args))
             {
                 txtBranchName.Text = string.Empty;
                 LoadBranches(branchType);
+
+                return true;
             }
 
-            var args2 = new GitArgumentBuilder("push")
+            return false;
+        }
+
+        private bool TagBranchCreation(string branchType, string branchName, int increment)
+        {
+            if (branchType != "release")
+            {
+                return false;
+            }
+
+            var shortName = branchName.Remove(0, "release/".Length);
+            var args = new GitArgumentBuilder("tag")
+                    {
+                        "-a",
+                        $"i#{increment}_{shortName}_creation",
+                        "-m",
+                        $"\"Creation of release {shortName}\""
+                    };
+
+            if (args == null)
+            {
+                return false;
+            }
+
+            return RunCommand(args);
+        }
+
+        private bool PushTags()
+        {
+            var args = new GitArgumentBuilder("push")
+                    {
+                        "origin",
+                        "--tags"
+                    };
+
+            if (args == null)
+            {
+                return false;
+            }
+
+            return RunCommand(args);
+        }
+
+        private bool PushBranch(string branchName)
+        {
+            var args = new GitArgumentBuilder("push")
                     {
                         "-u",
                         $"origin",
                         branchName
                     };
 
-            if (args2 == null)
+            if (args == null)
+            {
+                return false;
+            }
+
+            return RunCommand(args);
+        }
+
+        private void btnStartBranch_Click(object sender, EventArgs e)
+        {
+            var branchType = cbType.SelectedValue.ToString();
+            var branchName = $"{branchType}/{txtBranchName.Text}";
+            if (!CreateBranch(branchType, branchName))
             {
                 return;
             }
 
-            RunCommand(args2);
+            if (!PushBranch(branchName))
+            {
+                return;
+            }
+
+            var increment = RetrieveIncrement();
+
+            if (!TagBranchCreation(branchType, branchName, increment))
+            {
+                return;
+            }
+
+            PushTags();
+        }
+
+        private int RetrieveIncrement()
+        {
+            var args = new GitArgumentBuilder("tag")
+                    {
+                        "--list",
+                        $"i#*"
+                    };
+
+            if (args == null)
+            {
+                return -1;
+            }
+
+            RunCommand(args);
+
+            var tags = txtResult.Text.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries).Where(t => t.StartsWith("i#")).ToArray();
+
+            if (tags.Any())
+            {
+                var max = tags.Select(t => ExtractIncrement(t)).Max();
+                return max + 1;
+            }
+            else
+            {
+                return 1;
+            }
+        }
+
+        private int ExtractIncrement(string tag)
+        {
+            if (!tag.StartsWith("i#"))
+            {
+                return 1;
+            }
+
+            var index = tag.IndexOf('_');
+
+            var increment = tag.Substring(2, index - 2);
+
+            return int.Parse(increment);
         }
 
         private string GetBaseBranch()
@@ -489,6 +600,8 @@ namespace ShiftFlow
                 comboBox1.Enabled = true;
                 textBox1.Text = string.Empty;
                 textBox2.Text = string.Empty;
+                linkLabel1.Visible = false;
+                linkLabel2.Visible = false;
 
                 var branchType = cbManageType.SelectedValue.ToString();
                 var branchName = cbBranches.SelectedItem?.ToString();
@@ -519,14 +632,20 @@ namespace ShiftFlow
                 {
                     var isDevelop = branchPullrequest.Base.Ref == "develop";
                     button1.Enabled = false;
+                    var number = $"PR #{branchPullrequest.Number}";
+                    var link = $"{branchPullrequest.Url}".Replace("https://api.github.com/repos/", "https://github.com/").Replace("pulls", "pull");
                     if (isDevelop)
                     {
-                        textBox1.Text = $"PR #{branchPullrequest.Number}";
+                        textBox1.Text = number;
+                        linkLabel1.Text = link;
+                        linkLabel1.Visible = true;
                         button2.Enabled = true;
                     }
                     else
                     {
-                        textBox2.Text = $"PR #{branchPullrequest.Number}";
+                        textBox2.Text = number;
+                        linkLabel2.Text = link;
+                        linkLabel2.Visible = true;
                         btnFinish.Enabled = true;
                         comboBox1.SelectedItem = branchPullrequest.Base.Ref;
                         comboBox1.Enabled = false;
@@ -612,6 +731,16 @@ namespace ShiftFlow
                 "--tags"
             };
             RunCommand(argsTags);
+        }
+
+        private void linkLabel1_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
+        {
+            Process.Start("chrome", linkLabel1.Text);
+        }
+
+        private void linkLabel2_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
+        {
+            Process.Start("chrome", linkLabel2.Text);
         }
     }
 

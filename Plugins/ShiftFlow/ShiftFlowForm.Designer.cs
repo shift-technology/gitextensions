@@ -43,6 +43,8 @@ namespace ShiftFlow
             this.lblPrefixManage = new System.Windows.Forms.Label();
             this.label1 = new System.Windows.Forms.Label();
             this.panel4 = new System.Windows.Forms.Panel();
+            this.linkLabel2 = new System.Windows.Forms.LinkLabel();
+            this.linkLabel1 = new System.Windows.Forms.LinkLabel();
             this.button2 = new System.Windows.Forms.Button();
             this.button1 = new System.Windows.Forms.Button();
             this.label5 = new System.Windows.Forms.Label();
@@ -138,7 +140,7 @@ namespace ShiftFlow
             // 
             // btnFinish
             // 
-            this.btnFinish.Location = new System.Drawing.Point(665, 56);
+            this.btnFinish.Location = new System.Drawing.Point(665, 88);
             this.btnFinish.Margin = new System.Windows.Forms.Padding(4);
             this.btnFinish.Name = "btnFinish";
             this.btnFinish.Size = new System.Drawing.Size(74, 29);
@@ -196,6 +198,8 @@ namespace ShiftFlow
             // panel4
             // 
             this.panel4.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
+            this.panel4.Controls.Add(this.linkLabel2);
+            this.panel4.Controls.Add(this.linkLabel1);
             this.panel4.Controls.Add(this.button2);
             this.panel4.Controls.Add(this.button1);
             this.panel4.Controls.Add(this.label5);
@@ -209,6 +213,28 @@ namespace ShiftFlow
             this.panel4.Size = new System.Drawing.Size(754, 162);
             this.panel4.TabIndex = 10;
             // 
+            // linkLabel2
+            // 
+            this.linkLabel2.AutoSize = true;
+            this.linkLabel2.Location = new System.Drawing.Point(3, 127);
+            this.linkLabel2.Name = "linkLabel2";
+            this.linkLabel2.Size = new System.Drawing.Size(72, 17);
+            this.linkLabel2.TabIndex = 13;
+            this.linkLabel2.TabStop = true;
+            this.linkLabel2.Text = "linkLabel2";
+            this.linkLabel2.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.linkLabel2_LinkClicked);
+            // 
+            // linkLabel1
+            // 
+            this.linkLabel1.AutoSize = true;
+            this.linkLabel1.Location = new System.Drawing.Point(3, 63);
+            this.linkLabel1.Name = "linkLabel1";
+            this.linkLabel1.Size = new System.Drawing.Size(72, 17);
+            this.linkLabel1.TabIndex = 12;
+            this.linkLabel1.TabStop = true;
+            this.linkLabel1.Text = "linkLabel1";
+            this.linkLabel1.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.linkLabel1_LinkClicked);
+            // 
             // button2
             // 
             this.button2.Location = new System.Drawing.Point(665, 21);
@@ -221,7 +247,7 @@ namespace ShiftFlow
             // 
             // button1
             // 
-            this.button1.Location = new System.Drawing.Point(126, 100);
+            this.button1.Location = new System.Drawing.Point(3, 3);
             this.button1.Name = "button1";
             this.button1.Size = new System.Drawing.Size(134, 29);
             this.button1.TabIndex = 10;
@@ -232,7 +258,7 @@ namespace ShiftFlow
             // label5
             // 
             this.label5.AutoSize = true;
-            this.label5.Location = new System.Drawing.Point(3, 62);
+            this.label5.Location = new System.Drawing.Point(3, 94);
             this.label5.Name = "label5";
             this.label5.Size = new System.Drawing.Size(25, 17);
             this.label5.TabIndex = 9;
@@ -251,7 +277,7 @@ namespace ShiftFlow
             // 
             this.comboBox1.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.comboBox1.FormattingEnabled = true;
-            this.comboBox1.Location = new System.Drawing.Point(34, 59);
+            this.comboBox1.Location = new System.Drawing.Point(34, 91);
             this.comboBox1.Name = "comboBox1";
             this.comboBox1.Size = new System.Drawing.Size(343, 24);
             this.comboBox1.TabIndex = 7;
@@ -259,7 +285,7 @@ namespace ShiftFlow
             // textBox2
             // 
             this.textBox2.Enabled = false;
-            this.textBox2.Location = new System.Drawing.Point(383, 59);
+            this.textBox2.Location = new System.Drawing.Point(383, 91);
             this.textBox2.Name = "textBox2";
             this.textBox2.Size = new System.Drawing.Size(276, 22);
             this.textBox2.TabIndex = 2;
@@ -571,5 +597,7 @@ namespace ShiftFlow
         private Button button2;
         private Label label6;
         private TextBox textBox3;
+        private LinkLabel linkLabel2;
+        private LinkLabel linkLabel1;
     }
 }
