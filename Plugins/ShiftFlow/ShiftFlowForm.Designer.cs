@@ -145,7 +145,7 @@ namespace ShiftFlow
             this.btnFinish.Name = "btnFinish";
             this.btnFinish.Size = new System.Drawing.Size(74, 29);
             this.btnFinish.TabIndex = 0;
-            this.btnFinish.Text = "Merge";
+            this.btnFinish.Text = "Finish";
             this.btnFinish.UseVisualStyleBackColor = true;
             this.btnFinish.Click += new System.EventHandler(this.btnFinish_Click);
             // 
@@ -237,13 +237,13 @@ namespace ShiftFlow
             // 
             // button2
             // 
+            this.button2.ForeColor = System.Drawing.Color.Red;
             this.button2.Location = new System.Drawing.Point(665, 21);
             this.button2.Name = "button2";
             this.button2.Size = new System.Drawing.Size(75, 29);
             this.button2.TabIndex = 11;
-            this.button2.Text = "Merge";
+            this.button2.Text = "Status";
             this.button2.UseVisualStyleBackColor = true;
-            this.button2.Click += new System.EventHandler(this.button2_Click);
             // 
             // button1
             // 
@@ -281,6 +281,7 @@ namespace ShiftFlow
             this.comboBox1.Name = "comboBox1";
             this.comboBox1.Size = new System.Drawing.Size(343, 24);
             this.comboBox1.TabIndex = 7;
+            this.comboBox1.SelectedValueChanged += new System.EventHandler(this.ComboBox1_SelectedValueChanged);
             // 
             // textBox2
             // 

@@ -93,6 +93,10 @@ namespace ShiftFlow
             LoadBaseBranches();
 
             DisplayHead();
+
+            LoadBranches();
+
+            UpdatePullRequestsValues();
         }
 
         private static bool TryExtractBranchFromHead(string currentRef, out string branchType, out string branchName)
@@ -114,7 +118,7 @@ namespace ShiftFlow
         }
 
         #region Loading Branches
-        private void LoadBranches(string branchType)
+        private void LoadBranches()
         {
             cbManageType.Enabled = false;
             cbBranches.DataSource = new List<string> { _loading.Text };
@@ -190,14 +194,8 @@ namespace ShiftFlow
 
             comboBox1.Enabled = true;
             cbBranches.Enabled = isThereABranch;
-            if (isThereABranch && CurrentBranch != null)
-            {
-                cbBranches.SelectedItem = CurrentBranch;
-                CurrentBranch = null;
-            }
 
             btnFinish.Enabled = isThereABranch;
-            button2.Enabled = isThereABranch;
         }
 
         private void LoadBaseBranches()
@@ -250,7 +248,7 @@ namespace ShiftFlow
             if (RunCommand(args))
             {
                 txtBranchName.Text = string.Empty;
-                LoadBranches(branchType);
+                LoadBranches();
 
                 return true;
             }
@@ -524,13 +522,10 @@ namespace ShiftFlow
             {
                 var mayHavePrs = branchType != "production";
                 pnlManageBranch.Enabled = true;
-                LoadBranches(branchType);
+                LoadBranches();
                 panel4.Visible = mayHavePrs;
 
-                if (mayHavePrs)
-                {
-                    UpdatePullRequestsValues();
-                }
+                UpdatePullRequestsValues();
             }
             else
             {
@@ -592,6 +587,14 @@ namespace ShiftFlow
 
         private void UpdatePullRequestsValues()
         {
+            var branchType = cbManageType.SelectedValue.ToString();
+            var mayHavePrs = branchType != "production";
+
+            if (!mayHavePrs)
+            {
+                return;
+            }
+
             try
             {
                 button1.Enabled = true;
@@ -600,10 +603,10 @@ namespace ShiftFlow
                 comboBox1.Enabled = true;
                 textBox1.Text = string.Empty;
                 textBox2.Text = string.Empty;
+                button2.Text = "State";
                 linkLabel1.Visible = false;
                 linkLabel2.Visible = false;
 
-                var branchType = cbManageType.SelectedValue.ToString();
                 var branchName = cbBranches.SelectedItem?.ToString();
 
                 if (branchName == _loading.Text || string.IsNullOrEmpty(branchName))
@@ -639,7 +642,7 @@ namespace ShiftFlow
                         textBox1.Text = number;
                         linkLabel1.Text = link;
                         linkLabel1.Visible = true;
-                        button2.Enabled = true;
+                        button2.Text = branchPullrequest.State;
                     }
                     else
                     {
@@ -690,47 +693,6 @@ namespace ShiftFlow
             {
                 MessageBox.Show(this, $"Error: {exception.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
-        }
-
-        private void button2_Click(object sender, EventArgs e)
-        {
-            if (string.IsNullOrEmpty(textBox1.Text))
-            {
-                MessageBox.Show(this, $"The pull request has not been created", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                return;
-            }
-
-            var toDevelopNumber = int.Parse(textBox1.Text.Remove(0, 4));
-
-            var branchName = cbBranches.SelectedItem.ToString();
-
-            try
-            {
-                var currentRepository = Path.GetFileName(_gitUiCommands.GitModule.WorkingDir.Trim('\\'));
-                var repository = Repositories[currentRepository];
-
-                PullRequest toDevelop = repository.GetPullRequest(toDevelopNumber);
-
-                var success1 = toDevelop.Merge(branchName);
-
-                if (!success1)
-                {
-                    var bodyMessage = $"Failed to merge {branchName} into develop\r\n";
-
-                    MessageBox.Show(this, bodyMessage, "Failed merge", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                }
-            }
-            catch (Exception exception)
-            {
-                MessageBox.Show(this, $"Error: {exception.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-
-            var argsTags = new GitArgumentBuilder("push")
-            {
-                "origin",
-                "--tags"
-            };
-            RunCommand(argsTags);
         }
 
         private void linkLabel1_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
