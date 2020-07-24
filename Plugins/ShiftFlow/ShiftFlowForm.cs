@@ -36,6 +36,14 @@ namespace ShiftFlow
         private readonly TranslationString _loading = new TranslationString("Loading...");
         private readonly TranslationString _noBranchExist = new TranslationString("No {0} branches exist.");
 
+        private const string ProductionNamingConvention = "(luke|force|projectname)_(tenant|target)[_v{version}]";
+        private const string HotfixNamingConvention = "(luke|force|projectname)_(context)";
+        private const string ReleaseNamingConvention = "(luke|force|projectname)_(tenant|target)_(YYYYmmdd)";
+
+        private readonly TranslationString _ProductionBranchContext = new TranslationString("A production branch corresponds to a client.\r\nYou may need to create this branch when working on a long period for a given customer.\r\nYou can suffix the branch with a version if needed.");
+        private readonly TranslationString _HotfixBranchContext = new TranslationString("A hotfix originates from a production branch. It must be a short lived branch.\r\nYou may use this branch for correcting a bug in production.\r\nYou may also want to work on senarios.");
+        private readonly TranslationString _ReleaseBranchContext = new TranslationString("A release branch originates from develop. It must be a short lived branch.\r\nYou may use this branch when preparing for a new release.");
+
         private readonly GitUIEventArgs _gitUiCommands;
 
         private Dictionary<string, IReadOnlyList<string>> Branches { get; } = new Dictionary<string, IReadOnlyList<string>>();
@@ -67,9 +75,6 @@ namespace ShiftFlow
 
             _gitUiCommands = gitUiCommands;
 
-            lblPrefixManage.Text = string.Empty;
-            ttShiftFlow.SetToolTip(lnkShiftFlow, _ShiftFlowTooltip.Text);
-
             if (_gitUiCommands != null)
             {
                 Init();
@@ -80,8 +85,6 @@ namespace ShiftFlow
         {
             gbStart.Enabled = true;
             gbManage.Enabled = true;
-            lblCaptionHead.Visible = true;
-            lblHead.Visible = true;
 
             cbType.DataSource = BranchTypes;
             var types = new List<string>();
@@ -496,28 +499,30 @@ namespace ShiftFlow
         {
             var branchType = cbType.SelectedValue.ToString();
 
-            textBox3.Text = "";
+            label9.Text = "";
 
             if (branchType == "production")
             {
-                textBox3.Text = "(luke|force|projectname)_(tenant|target)[_v{version}]";
+                label9.Text = ProductionNamingConvention;
+                label8.Text = _ProductionBranchContext.Text;
             }
 
             if (branchType == "hotfix")
             {
-                textBox3.Text = "(luke|force|projectname)_(context)";
+                label9.Text = HotfixNamingConvention;
+                label8.Text = _HotfixBranchContext.Text;
             }
 
             if (branchType == "release")
             {
-                textBox3.Text = "(luke|force|projectname)_(tenant|target)_(YYYYmmdd)";
+                label9.Text = ReleaseNamingConvention;
+                label8.Text = _ReleaseBranchContext.Text;
             }
         }
 
         private void cbManageType_SelectedValueChanged(object sender, EventArgs e)
         {
             var branchType = cbManageType.SelectedValue.ToString();
-            lblPrefixManage.Text = branchType + "/";
             if (!string.IsNullOrWhiteSpace(branchType))
             {
                 var mayHavePrs = branchType != "production";
@@ -562,16 +567,10 @@ namespace ShiftFlow
             Close();
         }
 
-        private void lnkShiftFlow_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
-        {
-            Process.Start("https://github.com/nvie/gitflow");
-        }
-
         private void DisplayHead()
         {
             var args = new GitArgumentBuilder("symbolic-ref") { "HEAD" };
             var head = _gitUiCommands.GitModule.GitExecutable.GetOutput(args).Trim('*', ' ', '\n', '\r');
-            lblHead.Text = head;
 
             var currentRef = head.RemovePrefix(GitRefName.RefsHeadsPrefix);
 
@@ -584,6 +583,18 @@ namespace ShiftFlow
 
         private string _currentBranch = string.Empty;
         private string _currentBranchType = string.Empty;
+
+        private bool IsMergeable(PullRequest pullRequest)
+        {
+            var status = pullRequest.Mergeable_state;
+
+            if (status == "dirty" || status == "blocked")
+            {
+                return false;
+            }
+
+            return pullRequest.Mergeable == true;
+        }
 
         private void UpdatePullRequestsValues()
         {
@@ -602,10 +613,14 @@ namespace ShiftFlow
                 btnFinish.Enabled = false;
                 comboBox1.Enabled = true;
                 textBox1.Text = string.Empty;
+                label12.Text = "         ";
+                label13.Text = "         ";
                 textBox2.Text = string.Empty;
                 button2.Text = "State";
                 linkLabel1.Visible = false;
                 linkLabel2.Visible = false;
+                label12.BackColor = System.Drawing.Color.Green;
+                label13.BackColor = System.Drawing.Color.Green;
 
                 var branchName = cbBranches.SelectedItem?.ToString();
 
@@ -631,27 +646,34 @@ namespace ShiftFlow
                 var prs = repository.GetPullRequests();
                 var branchPullrequests = prs.Where(p => p.Head.Ref == branchName).ToArray();
 
-                foreach (var branchPullrequest in branchPullrequests)
+                foreach (var generalBranchPullrequest in branchPullrequests)
                 {
+                    var branchPullrequest = repository.GetPullRequest(generalBranchPullrequest.Number);
                     var isDevelop = branchPullrequest.Base.Ref == "develop";
                     button1.Enabled = false;
                     var number = $"PR #{branchPullrequest.Number}";
                     var link = $"{branchPullrequest.Url}".Replace("https://api.github.com/repos/", "https://github.com/").Replace("pulls", "pull");
+                    var mergeable = IsMergeable(branchPullrequest);
+
                     if (isDevelop)
                     {
                         textBox1.Text = number;
                         linkLabel1.Text = link;
                         linkLabel1.Visible = true;
                         button2.Text = branchPullrequest.State;
+                        label12.BackColor = mergeable ? System.Drawing.Color.Green : System.Drawing.Color.Red;
+                        label12.Text = branchPullrequest.Mergeable_state;
                     }
                     else
                     {
                         textBox2.Text = number;
                         linkLabel2.Text = link;
                         linkLabel2.Visible = true;
-                        btnFinish.Enabled = true;
+                        btnFinish.Enabled = mergeable;
                         comboBox1.SelectedItem = branchPullrequest.Base.Ref;
                         comboBox1.Enabled = false;
+                        label13.BackColor = mergeable ? System.Drawing.Color.Green : System.Drawing.Color.Red;
+                        label13.Text = branchPullrequest.Mergeable_state;
                     }
                 }
             }
