@@ -3,7 +3,7 @@
 	url = ../../gitextensions/GitExtensionsDoc.git
 [submodule "Externals/Git.hub"]
 	path = Externals/Git.hub
-	url = ../../justin-marshall-shift/Git.hub.git
+	url = ../../shift-technology/Git.hub.git
 [submodule "Externals/conemu-inside"]
 	path = Externals/conemu-inside
 	url = ../../gitextensions/conemu-inside.git
