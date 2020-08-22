@@ -57,6 +57,7 @@ namespace ShiftFlow
         private readonly GitUIEventArgs _gitUiCommands;
 
         private readonly string _MasterBranches = $"{Branch.masters:G}";
+        private readonly string _GoldenBranch = $"master";
         private readonly string _StagingBranches = $"{Branch.staging:G}";
         private readonly string _SupportBranches = $"{Branch.support:G}";
         private readonly string _ReleaseBranches = $"{Branch.release:G}";
@@ -107,7 +108,7 @@ namespace ShiftFlow
             {
                 return new List<string>
                 {
-                    Branch.masters.ToString(),
+                    // Branch.masters.ToString(),
                     Branch.support.ToString(),
                     Branch.staging.ToString()
                 };
@@ -272,18 +273,25 @@ namespace ShiftFlow
 
             cbManageType.Enabled = true;
             cbBranches.DataSource = isThereABranch ? branches : new[] { string.Format(_noBranchExist.Text, branchType) };
+            comboBox1.Enabled = true;
+            comboBox3.Enabled = true;
 
             if (role == $"{Role.datascientist:G}")
             {
                 comboBox1.DataSource = Branches.ContainsKey(_ProductionBranches) ? Branches[_ProductionBranches] : new[] { string.Format(_noBranchExist.Text, _ProductionBranches) };
-                comboBox3.DataSource = Branches.ContainsKey(_MasterBranches) ? Branches[_MasterBranches] : new[] { string.Format(_noBranchExist.Text, _MasterBranches) };
+
+                // comboBox3.DataSource = Branches.ContainsKey(_MasterBranches) ? Branches[_MasterBranches] : new[] { string.Format(_noBranchExist.Text, _MasterBranches) };
+                comboBox3.DataSource = new[] { _GoldenBranch };
+                comboBox3.SelectedItem = _GoldenBranch;
+                comboBox3.Enabled = false;
             }
             else
             {
-                comboBox1.DataSource = Branches.ContainsKey(_MasterBranches) ? Branches[_MasterBranches] : new[] { string.Format(_noBranchExist.Text, _MasterBranches) };
+                // comboBox1.DataSource = Branches.ContainsKey(_MasterBranches) ? Branches[_MasterBranches] : new[] { string.Format(_noBranchExist.Text, _MasterBranches) };
+                comboBox1.DataSource = new[] { _GoldenBranch };
+                comboBox1.SelectedItem = _GoldenBranch;
+                comboBox1.Enabled = false;
             }
-
-            comboBox1.Enabled = true;
 
             cbBranches.Enabled = isThereABranch;
 
@@ -305,11 +313,23 @@ namespace ShiftFlow
 
             var manageBaseBranch = NeedsBaseBranch(branchType);
             pnlBasedOn.Visible = manageBaseBranch;
+
+            var role = comboBox2.SelectedValue?.ToString();
+
             cbBaseBranch.Enabled = manageBaseBranch;
 
             if (manageBaseBranch)
             {
-                cbBaseBranch.DataSource = GetPossibleBaseBranches(branchType);
+                if (role != $"{Role.datascientist:G}")
+                {
+                    cbBaseBranch.DataSource = GetPossibleBaseBranches(branchType);
+                }
+                else
+                {
+                    cbBaseBranch.DataSource = new[] { _GoldenBranch };
+                    cbBaseBranch.SelectedItem = _GoldenBranch;
+                    cbBaseBranch.Enabled = false;
+                }
             }
         }
 
@@ -370,7 +390,7 @@ namespace ShiftFlow
                 return $"/{Branch.production:G}/";
             }
 
-            return $"/{Branch.masters:G}/";
+            return $"/master";
         }
 
         #endregion
@@ -859,7 +879,9 @@ namespace ShiftFlow
                 {
                     var branchPullrequest = repository.GetPullRequest(generalBranchPullrequest.Number);
                     var isDevelop = branchPullrequest.Base.Ref == "develop";
-                    var isMaster = branchPullrequest.Base.Ref.StartsWith($"{Branch.masters:G}/");
+
+                    // var isMaster = branchPullrequest.Base.Ref.StartsWith($"{Branch.masters:G}/");
+                    var isMaster = branchPullrequest.Base.Ref == "master";
                     button1.Enabled = false;
                     var number = $"PR #{branchPullrequest.Number}";
                     var link = $"{branchPullrequest.Url}".Replace("https://api.github.com/repos/", "https://github.com/").Replace("pulls", "pull");
@@ -958,6 +980,11 @@ namespace ShiftFlow
         private void linkLabel2_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
         {
             Process.Start("chrome", linkLabel2.Text);
+        }
+
+        private void linkLabel3_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
+        {
+            Process.Start("chrome", linkLabel3.Text);
         }
     }
 
