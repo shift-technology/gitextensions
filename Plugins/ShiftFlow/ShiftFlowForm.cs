@@ -59,9 +59,9 @@ namespace ShiftFlow
         private readonly string _MasterBranches = $"{Branch.masters:G}";
         private readonly string _DevelopBranch = $"develop";
         private readonly string _GoldenBranch = $"main";
-        private readonly string _StagingBranches = $"{Branch.staging:G}";
+        private readonly string _StagingBranches = $"{Branch.releaseMain:G}";
         private readonly string _SupportBranches = $"{Branch.support:G}";
-        private readonly string _ReleaseBranches = $"{Branch.release:G}";
+        private readonly string _ReleaseBranches = $"{Branch.releaseProd:G}";
         private readonly string _HotfixBranches = $"{Branch.hotfix:G}";
         private readonly string _ProductionBranches = $"{Branch.production:G}";
 
@@ -83,12 +83,12 @@ namespace ShiftFlow
 
         private enum Branch
         {
-            release,
+            releaseProd,
             hotfix,
             production,
             support,
             masters,
-            staging
+            releaseMain
         }
 
         private static List<string> Roles
@@ -111,14 +111,14 @@ namespace ShiftFlow
                 {
                     // Branch.masters.ToString(),
                     Branch.support.ToString(),
-                    Branch.staging.ToString()
+                    Branch.releaseMain.ToString()
                 };
             }
 
             return new List<string>
                 {
                     Branch.hotfix.ToString(),
-                    Branch.release.ToString(),
+                    Branch.releaseProd.ToString(),
                     Branch.production.ToString()
                 };
         }
@@ -556,11 +556,11 @@ namespace ShiftFlow
             {
                 case Branch.hotfix:
                     return $"{cbBaseBranch.SelectedItem}";
-                case Branch.release:
+                case Branch.releaseProd:
                 case Branch.support:
                 case Branch.production:
                     return _GoldenBranch;
-                case Branch.staging:
+                case Branch.releaseMain:
                 default:
                     return _DevelopBranch;
             }
