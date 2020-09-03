@@ -181,6 +181,18 @@ namespace ShiftFlow
         #region Loading Branches
         private void LoadBranches()
         {
+            try
+            {
+                LoadBranchesCore();
+            }
+            catch
+            {
+                // TODO
+            }
+        }
+
+        private void LoadBranchesCore()
+        {
             cbManageType.Enabled = false;
             cbBranches.DataSource = new List<string> { _loading.Text };
             comboBox1.DataSource = new List<string> { _loading.Text };
@@ -267,8 +279,8 @@ namespace ShiftFlow
                 cbManageType.SelectedItem = branchType;
             }
 
-            var branches = Branches[branchType];
-            var isThereABranch = branches.Any();
+            var branches = Branches.ContainsKey(branchType) ? Branches[branchType] : new List<string> { };
+            var isThereABranch = Branches.ContainsKey(branchType) && branches.Any();
 
             var role = comboBox2.SelectedValue.ToString();
 
@@ -902,7 +914,7 @@ namespace ShiftFlow
                         label12.BackColor = mergeable ? System.Drawing.Color.Green : System.Drawing.Color.Red;
                         label12.Text = branchPullrequest.Mergeable_state;
                     }
-                    else if (hasProduction && isMaster)
+                    else if (isMaster)
                     {
                         textBox2.Text = number;
                         linkLabel2.Text = link;
@@ -913,7 +925,7 @@ namespace ShiftFlow
                         label13.BackColor = mergeable ? System.Drawing.Color.Green : System.Drawing.Color.Red;
                         label13.Text = branchPullrequest.Mergeable_state;
                     }
-                    else if (!hasProduction || !isMaster)
+                    else if (hasProduction && !isMaster)
                     {
                         textBox3.Text = number;
                         linkLabel3.Text = link;
