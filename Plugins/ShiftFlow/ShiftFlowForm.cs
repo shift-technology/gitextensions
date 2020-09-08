@@ -967,19 +967,24 @@ namespace ShiftFlow
                 var repository = Repositories[currentRepository];
                 var prs = repository.GetPullRequests();
 
-                var toDevelop = repository.CreatePullRequest(branchName, "develop", $"PR to develop for {branchName}", $"PR to develop for {branchName}");
+                var body = GetPullRequestBody($"Pull request for {branchName}");
 
                 var productionBranch = comboBox1.SelectedItem.ToString();
                 var mainBranch = comboBox3.SelectedItem.ToString();
 
                 if (role == $"{Role.developer:G}")
                 {
-                    var toMaster = repository.CreatePullRequest(branchName, productionBranch, $"PR to {productionBranch} for {branchName}", $"PR to {productionBranch} for {branchName}");
+                    var toMaster = repository.CreatePullRequest(branchName, productionBranch, $"PR to {productionBranch} for {branchName}", body);
+                    var link = $"{toMaster.Url}".Replace("https://api.github.com/repos/", "https://github.com/").Replace("pulls", "pull");
+                    var toDevelop = repository.CreatePullRequest(branchName, "develop", $"PR to develop for {branchName}", $"{body}\r\nMerge to main {link}");
                 }
                 else
                 {
-                    var toMaster = repository.CreatePullRequest(branchName, mainBranch, $"PR to {mainBranch} for {branchName}", $"PR to {mainBranch} for {branchName}");
-                    var toProduction = repository.CreatePullRequest(branchName, productionBranch, $"PR to {productionBranch} for {branchName}", $"PR to {productionBranch} for {branchName}");
+                    var toMaster = repository.CreatePullRequest(branchName, mainBranch, $"PR to {mainBranch} for {branchName}", body);
+                    var linkMain = $"{toMaster.Url}".Replace("https://api.github.com/repos/", "https://github.com/").Replace("pulls", "pull");
+                    var toProduction = repository.CreatePullRequest(branchName, productionBranch, $"PR to {productionBranch} for {branchName}", $"{body}\r\nMerge to main {linkMain}");
+                    var linkProd = $"{toProduction.Url}".Replace("https://api.github.com/repos/", "https://github.com/").Replace("pulls", "pull");
+                    var toDevelop = repository.CreatePullRequest(branchName, "develop", $"PR to develop for {branchName}", $"{body}\r\nMerge to main {linkMain}\r\nMerge to main {linkProd}");
                 }
 
                 UpdatePullRequestsValues();
@@ -987,6 +992,15 @@ namespace ShiftFlow
             catch (Exception exception)
             {
                 MessageBox.Show(this, $"Error: {exception.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private string GetPullRequestBody(string content)
+        {
+            using (var pullRequestBodyPrompt = new PullRequestBodyPrompt(content))
+            {
+                pullRequestBodyPrompt.ShowDialog(this);
+                return PullRequestContent.Body;
             }
         }
 
