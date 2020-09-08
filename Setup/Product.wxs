@@ -1625,6 +1625,7 @@
         </Feature>
         <Feature Id="ShiftFlow" Title="ShiftFlow" Level="1">
           <ComponentRef Id="ShiftFlow.dll" />
+          <ComponentRef Id="Newtonsoft.Json.dll" />
         </Feature>
         <Feature Id="Gource" Title="Gource visualization" Level="1">
           <ComponentRef Id="Gource.dll" />

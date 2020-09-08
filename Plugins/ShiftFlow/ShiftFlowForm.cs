@@ -333,7 +333,7 @@ namespace ShiftFlow
 
             if (manageBaseBranch)
             {
-                if (role != $"{Role.datascientist:G}" || branchType == $"{Branch.support}")
+                if (branchType == $"{Branch.hotfix}")
                 {
                     cbBaseBranch.DataSource = GetPossibleBaseBranches(branchType);
                 }
