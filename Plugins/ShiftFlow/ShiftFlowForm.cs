@@ -7,6 +7,7 @@ using System.Linq.Expressions;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -74,6 +75,10 @@ namespace ShiftFlow
         public bool IsRefreshNeeded { get; set; }
 
         private string CurrentBranch { get; set; }
+
+        private List<PullRequest> _PullRequests = null;
+
+        private Task _LoadPullRequestsTask = null;
 
         private enum Role
         {
@@ -154,10 +159,47 @@ namespace ShiftFlow
 
             LoadBranches();
 
+            LoadPullRequests();
+
             UpdatePullRequestsValues();
 
             comboBox2.DataSource = Roles;
             comboBox2.SelectedItem = Roles.First();
+        }
+
+        private async Task LoadPullRequestsTask()
+        {
+            await Task.Yield();
+            List<PullRequest> GetPullRequests()
+            {
+                if (!Repositories.Any())
+                {
+                    try
+                    {
+                        GetRepositories();
+                    }
+                    catch
+                    {
+                        OAuthToken = null;
+                        AskForCredentials();
+                        GetRepositories();
+                    }
+                }
+
+                var currentRepository = Path.GetFileName(_gitUiCommands.GitModule.WorkingDir.Trim('\\'));
+                var repository = Repositories[currentRepository];
+                var prs = repository.GetPullRequests();
+                return prs.ToList();
+            }
+
+            _PullRequests = GetPullRequests();
+            UpdatePullRequestsValues();
+            _LoadPullRequestsTask = null;
+        }
+
+        private void LoadPullRequests()
+        {
+            _LoadPullRequestsTask = Task.Run(() => LoadPullRequestsTask());
         }
 
         private static bool TryExtractBranchFromHead(string currentRef, out string branchType, out string branchName)
@@ -890,8 +932,13 @@ namespace ShiftFlow
 
                 var currentRepository = Path.GetFileName(_gitUiCommands.GitModule.WorkingDir.Trim('\\'));
                 var repository = Repositories[currentRepository];
-                var prs = repository.GetPullRequests();
-                var branchPullrequests = prs.Where(p => p.Head.Ref == branchName).ToArray();
+
+                if (_PullRequests == null)
+                {
+                    return;
+                }
+
+                var branchPullrequests = _PullRequests.Where(p => p.Head.Ref == branchName).ToArray();
 
                 foreach (var generalBranchPullrequest in branchPullrequests)
                 {
@@ -965,7 +1012,6 @@ namespace ShiftFlow
 
                 var currentRepository = Path.GetFileName(_gitUiCommands.GitModule.WorkingDir.Trim('\\'));
                 var repository = Repositories[currentRepository];
-                var prs = repository.GetPullRequests();
 
                 var body = GetPullRequestBody($"Pull request for {branchName}");
 
@@ -975,16 +1021,21 @@ namespace ShiftFlow
                 if (role == $"{Role.developer:G}")
                 {
                     var toMaster = repository.CreatePullRequest(branchName, productionBranch, $"PR to {productionBranch} for {branchName}", body);
+                    _PullRequests.Add(toMaster);
                     var link = $"{toMaster.Url}".Replace("https://api.github.com/repos/", "https://github.com/").Replace("pulls", "pull");
                     var toDevelop = repository.CreatePullRequest(branchName, "develop", $"PR to develop for {branchName}", $"{body}\r\nMerge to main {link}");
+                    _PullRequests.Add(toDevelop);
                 }
                 else
                 {
                     var toMaster = repository.CreatePullRequest(branchName, mainBranch, $"PR to {mainBranch} for {branchName}", body);
+                    _PullRequests.Add(toMaster);
                     var linkMain = $"{toMaster.Url}".Replace("https://api.github.com/repos/", "https://github.com/").Replace("pulls", "pull");
                     var toProduction = repository.CreatePullRequest(branchName, productionBranch, $"PR to {productionBranch} for {branchName}", $"{body}\r\nMerge to main {linkMain}");
+                    _PullRequests.Add(toProduction);
                     var linkProd = $"{toProduction.Url}".Replace("https://api.github.com/repos/", "https://github.com/").Replace("pulls", "pull");
                     var toDevelop = repository.CreatePullRequest(branchName, "develop", $"PR to develop for {branchName}", $"{body}\r\nMerge to main {linkMain}\r\nMerge to main {linkProd}");
+                    _PullRequests.Add(toDevelop);
                 }
 
                 UpdatePullRequestsValues();
