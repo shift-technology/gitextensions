@@ -224,9 +224,9 @@ namespace ShiftFlow
             this.label22.AutoSize = true;
             this.label22.Location = new System.Drawing.Point(3, 14);
             this.label22.Name = "label22";
-            this.label22.Size = new System.Drawing.Size(99, 17);
+            this.label22.Size = new System.Drawing.Size(86, 17);
             this.label22.TabIndex = 0;
-            this.label22.Text = "Master branch";
+            this.label22.Text = "Main branch";
             // 
             // panel2
             // 
@@ -279,6 +279,7 @@ namespace ShiftFlow
             this.linkLabel3.TabIndex = 13;
             this.linkLabel3.TabStop = true;
             this.linkLabel3.Text = "linkLabel3";
+            this.linkLabel3.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.linkLabel3_LinkClicked);
             // 
             // label20
             // 
@@ -376,9 +377,9 @@ namespace ShiftFlow
             this.label5.Font = new System.Drawing.Font("Microsoft Sans Serif", 7.8F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label5.Location = new System.Drawing.Point(3, 6);
             this.label5.Name = "label5";
-            this.label5.Size = new System.Drawing.Size(260, 17);
+            this.label5.Size = new System.Drawing.Size(245, 17);
             this.label5.TabIndex = 9;
-            this.label5.Text = "Pull request to your master branch";
+            this.label5.Text = "Pull request to your main branch";
             // 
             // textBox2
             // 

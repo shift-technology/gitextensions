@@ -7,6 +7,7 @@ using System.Linq.Expressions;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -46,20 +47,22 @@ namespace ShiftFlow
 
         private readonly TranslationString _ProductionBranchContext = new TranslationString("A production branch corresponds to a client.\r\nYou may need to create this branch when working on a long period for a given customer.\r\nYou can suffix the branch with a version if needed.");
         private readonly TranslationString _HotfixBranchContext = new TranslationString("A hotfix originates from a production branch. It must be a short lived branch.\r\nYou may use this branch for correcting a bug in production.\r\nYou may also want to work on senarios.");
-        private readonly TranslationString _ReleaseBranchContext = new TranslationString("A release branch originates from a core master. It must be a short lived branch.\r\nYou may use this branch when preparing for a new release.");
-        private readonly TranslationString _MasterBranchContext = new TranslationString("A master branch corresponds to the framework.\r\nYou can suffix the branch with a version if needed. ex: forcev2");
-        private readonly TranslationString _SupportBranchContext = new TranslationString("A support originates from a core master branch. It must be a short lived branch.\r\nYou may use this branch for correcting a bug in the master branch.");
+        private readonly TranslationString _ReleaseBranchContext = new TranslationString("A release branch originates from the main branch. It must be a short lived branch.\r\nYou may use this branch when preparing for a new release.");
+        private readonly TranslationString _MasterBranchContext = new TranslationString("The main branch corresponds to the framework.\r\nYou can suffix the branch with a version if needed. ex: forcev2");
+        private readonly TranslationString _SupportBranchContext = new TranslationString("A support originates from the main branch. It must be a short lived branch.\r\nYou may use this branch for correcting a bug in the main branch.");
         private readonly TranslationString _StagingBranchContext = new TranslationString("A staging branch originates from develop. It must be a short lived branch.\r\nYou may use this branch when preparing for a new release of the core framework.");
 
-        private readonly TranslationString _RoleDataScientist = new TranslationString("Use the role datascientist when you want to work on your customer code.\r\nYou will have to chose a master branch as your base branch");
-        private readonly TranslationString _RoleDeveloper = new TranslationString("Use the role developer when you want to work on the core code and prepare for release to the master branch.\r\nYou can also create a branch for correcting a bug in the master branch.");
+        private readonly TranslationString _RoleDataScientist = new TranslationString("Use the role datascientist when you want to work on your customer code.");
+        private readonly TranslationString _RoleDeveloper = new TranslationString("Use the role developer when you want to work on the core code and prepare for release to the main branch.\r\nYou can also create a branch for correcting a bug in the main branch.");
 
         private readonly GitUIEventArgs _gitUiCommands;
 
         private readonly string _MasterBranches = $"{Branch.masters:G}";
-        private readonly string _StagingBranches = $"{Branch.staging:G}";
+        private readonly string _DevelopBranch = $"develop";
+        private readonly string _GoldenBranch = $"main";
+        private readonly string _StagingBranches = $"{Branch.releaseMain:G}";
         private readonly string _SupportBranches = $"{Branch.support:G}";
-        private readonly string _ReleaseBranches = $"{Branch.release:G}";
+        private readonly string _ReleaseBranches = $"{Branch.releaseProd:G}";
         private readonly string _HotfixBranches = $"{Branch.hotfix:G}";
         private readonly string _ProductionBranches = $"{Branch.production:G}";
 
@@ -73,6 +76,10 @@ namespace ShiftFlow
 
         private string CurrentBranch { get; set; }
 
+        private List<PullRequest> _PullRequests = null;
+
+        private Task _LoadPullRequestsTask = null;
+
         private enum Role
         {
             datascientist,
@@ -81,12 +88,12 @@ namespace ShiftFlow
 
         private enum Branch
         {
-            release,
+            releaseProd,
             hotfix,
             production,
             support,
             masters,
-            staging
+            releaseMain
         }
 
         private static List<string> Roles
@@ -107,16 +114,16 @@ namespace ShiftFlow
             {
                 return new List<string>
                 {
-                    Branch.masters.ToString(),
+                    // Branch.masters.ToString(),
                     Branch.support.ToString(),
-                    Branch.staging.ToString()
+                    Branch.releaseMain.ToString()
                 };
             }
 
             return new List<string>
                 {
                     Branch.hotfix.ToString(),
-                    Branch.release.ToString(),
+                    Branch.releaseProd.ToString(),
                     Branch.production.ToString()
                 };
         }
@@ -152,10 +159,47 @@ namespace ShiftFlow
 
             LoadBranches();
 
+            LoadPullRequests();
+
             UpdatePullRequestsValues();
 
             comboBox2.DataSource = Roles;
             comboBox2.SelectedItem = Roles.First();
+        }
+
+        private async Task LoadPullRequestsTask()
+        {
+            await Task.Yield();
+            List<PullRequest> GetPullRequests()
+            {
+                if (!Repositories.Any())
+                {
+                    try
+                    {
+                        GetRepositories();
+                    }
+                    catch
+                    {
+                        OAuthToken = null;
+                        AskForCredentials();
+                        GetRepositories();
+                    }
+                }
+
+                var currentRepository = Path.GetFileName(_gitUiCommands.GitModule.WorkingDir.Trim('\\'));
+                var repository = Repositories[currentRepository];
+                var prs = repository.GetPullRequests();
+                return prs.ToList();
+            }
+
+            _PullRequests = GetPullRequests();
+            UpdatePullRequestsValues();
+            _LoadPullRequestsTask = null;
+        }
+
+        private void LoadPullRequests()
+        {
+            _LoadPullRequestsTask = Task.Run(() => LoadPullRequestsTask());
         }
 
         private static bool TryExtractBranchFromHead(string currentRef, out string branchType, out string branchName)
@@ -178,6 +222,18 @@ namespace ShiftFlow
 
         #region Loading Branches
         private void LoadBranches()
+        {
+            try
+            {
+                LoadBranchesCore();
+            }
+            catch
+            {
+                // TODO
+            }
+        }
+
+        private void LoadBranchesCore()
         {
             cbManageType.Enabled = false;
             cbBranches.DataSource = new List<string> { _loading.Text };
@@ -265,25 +321,32 @@ namespace ShiftFlow
                 cbManageType.SelectedItem = branchType;
             }
 
-            var branches = Branches[branchType];
-            var isThereABranch = branches.Any();
+            var branches = Branches.ContainsKey(branchType) ? Branches[branchType] : new List<string> { };
+            var isThereABranch = Branches.ContainsKey(branchType) && branches.Any();
 
             var role = comboBox2.SelectedValue.ToString();
 
             cbManageType.Enabled = true;
             cbBranches.DataSource = isThereABranch ? branches : new[] { string.Format(_noBranchExist.Text, branchType) };
+            comboBox1.Enabled = true;
+            comboBox3.Enabled = true;
 
             if (role == $"{Role.datascientist:G}")
             {
                 comboBox1.DataSource = Branches.ContainsKey(_ProductionBranches) ? Branches[_ProductionBranches] : new[] { string.Format(_noBranchExist.Text, _ProductionBranches) };
-                comboBox3.DataSource = Branches.ContainsKey(_MasterBranches) ? Branches[_MasterBranches] : new[] { string.Format(_noBranchExist.Text, _MasterBranches) };
+
+                // comboBox3.DataSource = Branches.ContainsKey(_MasterBranches) ? Branches[_MasterBranches] : new[] { string.Format(_noBranchExist.Text, _MasterBranches) };
+                comboBox3.DataSource = new[] { _GoldenBranch };
+                comboBox3.SelectedItem = _GoldenBranch;
+                comboBox3.Enabled = false;
             }
             else
             {
-                comboBox1.DataSource = Branches.ContainsKey(_MasterBranches) ? Branches[_MasterBranches] : new[] { string.Format(_noBranchExist.Text, _MasterBranches) };
+                // comboBox1.DataSource = Branches.ContainsKey(_MasterBranches) ? Branches[_MasterBranches] : new[] { string.Format(_noBranchExist.Text, _MasterBranches) };
+                comboBox1.DataSource = new[] { _GoldenBranch };
+                comboBox1.SelectedItem = _GoldenBranch;
+                comboBox1.Enabled = false;
             }
-
-            comboBox1.Enabled = true;
 
             cbBranches.Enabled = isThereABranch;
 
@@ -305,20 +368,29 @@ namespace ShiftFlow
 
             var manageBaseBranch = NeedsBaseBranch(branchType);
             pnlBasedOn.Visible = manageBaseBranch;
+
+            var role = comboBox2.SelectedValue?.ToString();
+
             cbBaseBranch.Enabled = manageBaseBranch;
 
             if (manageBaseBranch)
             {
-                cbBaseBranch.DataSource = GetPossibleBaseBranches(branchType);
+                if (branchType == $"{Branch.hotfix}")
+                {
+                    cbBaseBranch.DataSource = GetPossibleBaseBranches(branchType);
+                }
+                else
+                {
+                    cbBaseBranch.DataSource = new[] { _GoldenBranch };
+                    cbBaseBranch.SelectedItem = _GoldenBranch;
+                    cbBaseBranch.Enabled = false;
+                }
             }
         }
 
         private bool NeedsBaseBranch(string branchType)
         {
-            if (branchType == Branch.hotfix.ToString("G")
-              || branchType == Branch.support.ToString("G")
-              || branchType == Branch.release.ToString("G")
-              || branchType == Branch.production.ToString("G"))
+            if (branchType == Branch.hotfix.ToString("G"))
             {
                 return true;
             }
@@ -370,7 +442,7 @@ namespace ShiftFlow
                 return $"/{Branch.production:G}/";
             }
 
-            return $"/{Branch.masters:G}/";
+            return $"/{_GoldenBranch}";
         }
 
         #endregion
@@ -529,15 +601,23 @@ namespace ShiftFlow
         {
             var branchType = cbType.SelectedValue.ToString();
 
-            if (branchType == Branch.hotfix.ToString("G")
-              || branchType == Branch.support.ToString("G")
-              || branchType == Branch.release.ToString("G")
-              || branchType == Branch.production.ToString("G"))
+            if (!Enum.TryParse<Branch>(branchType, out var enumType))
             {
-                return $"{cbBaseBranch.SelectedItem}";
+                return _DevelopBranch;
             }
 
-            return "develop";
+            switch (enumType)
+            {
+                case Branch.hotfix:
+                    return $"{cbBaseBranch.SelectedItem}";
+                case Branch.releaseProd:
+                case Branch.support:
+                case Branch.production:
+                    return _GoldenBranch;
+                case Branch.releaseMain:
+                default:
+                    return _DevelopBranch;
+            }
         }
 
         private void btnFinish_Click(object sender, EventArgs e)
@@ -563,7 +643,7 @@ namespace ShiftFlow
 
                 if (!success2)
                 {
-                    var bodyMessage = $"Failed to merge {branchName} into master\r\n";
+                    var bodyMessage = $"Failed to merge {branchName} into {_GoldenBranch}\r\n";
 
                     MessageBox.Show(this, bodyMessage, "Failed merge", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 }
@@ -838,28 +918,35 @@ namespace ShiftFlow
                 }
 
                 var productionBranch = comboBox1.SelectedItem?.ToString();
-                var masterBranch = comboBox3.SelectedItem?.ToString();
+                var mainBranch = comboBox3.SelectedItem?.ToString();
 
                 if (string.IsNullOrEmpty(productionBranch) || productionBranch == _loading.Text)
                 {
                     return;
                 }
 
-                if (role == $"{Role.datascientist:G}" && (string.IsNullOrEmpty(masterBranch) || masterBranch == _loading.Text))
+                if (role == $"{Role.datascientist:G}" && (string.IsNullOrEmpty(mainBranch) || mainBranch == _loading.Text))
                 {
                     return;
                 }
 
                 var currentRepository = Path.GetFileName(_gitUiCommands.GitModule.WorkingDir.Trim('\\'));
                 var repository = Repositories[currentRepository];
-                var prs = repository.GetPullRequests();
-                var branchPullrequests = prs.Where(p => p.Head.Ref == branchName).ToArray();
+
+                if (_PullRequests == null)
+                {
+                    return;
+                }
+
+                var branchPullrequests = _PullRequests.Where(p => p.Head.Ref == branchName).ToArray();
 
                 foreach (var generalBranchPullrequest in branchPullrequests)
                 {
                     var branchPullrequest = repository.GetPullRequest(generalBranchPullrequest.Number);
-                    var isDevelop = branchPullrequest.Base.Ref == "develop";
-                    var isMaster = branchPullrequest.Base.Ref.StartsWith($"{Branch.masters:G}/");
+                    var isDevelop = branchPullrequest.Base.Ref == _DevelopBranch;
+
+                    // var isMaster = branchPullrequest.Base.Ref.StartsWith($"{Branch.masters:G}/");
+                    var isMaster = branchPullrequest.Base.Ref == _GoldenBranch;
                     button1.Enabled = false;
                     var number = $"PR #{branchPullrequest.Number}";
                     var link = $"{branchPullrequest.Url}".Replace("https://api.github.com/repos/", "https://github.com/").Replace("pulls", "pull");
@@ -874,7 +961,7 @@ namespace ShiftFlow
                         label12.BackColor = mergeable ? System.Drawing.Color.Green : System.Drawing.Color.Red;
                         label12.Text = branchPullrequest.Mergeable_state;
                     }
-                    else if (hasProduction && isMaster)
+                    else if (isMaster)
                     {
                         textBox2.Text = number;
                         linkLabel2.Text = link;
@@ -885,7 +972,7 @@ namespace ShiftFlow
                         label13.BackColor = mergeable ? System.Drawing.Color.Green : System.Drawing.Color.Red;
                         label13.Text = branchPullrequest.Mergeable_state;
                     }
-                    else if (!hasProduction || !isMaster)
+                    else if (hasProduction && !isMaster)
                     {
                         textBox3.Text = number;
                         linkLabel3.Text = link;
@@ -925,21 +1012,30 @@ namespace ShiftFlow
 
                 var currentRepository = Path.GetFileName(_gitUiCommands.GitModule.WorkingDir.Trim('\\'));
                 var repository = Repositories[currentRepository];
-                var prs = repository.GetPullRequests();
 
-                var toDevelop = repository.CreatePullRequest(branchName, "develop", $"PR to develop for {branchName}", $"PR to develop for {branchName}");
+                var body = GetPullRequestBody($"Pull request for {branchName}");
 
                 var productionBranch = comboBox1.SelectedItem.ToString();
-                var masterBranch = comboBox3.SelectedItem.ToString();
+                var mainBranch = comboBox3.SelectedItem.ToString();
 
                 if (role == $"{Role.developer:G}")
                 {
-                    var toMaster = repository.CreatePullRequest(branchName, productionBranch, $"PR to {productionBranch} for {branchName}", $"PR to {productionBranch} for {branchName}");
+                    var toMaster = repository.CreatePullRequest(branchName, productionBranch, $"PR to {productionBranch} for {branchName}", body);
+                    _PullRequests.Add(toMaster);
+                    var link = $"{toMaster.Url}".Replace("https://api.github.com/repos/", "https://github.com/").Replace("pulls", "pull");
+                    var toDevelop = repository.CreatePullRequest(branchName, "develop", $"PR to develop for {branchName}", $"{body}\r\nMerge to main {link}");
+                    _PullRequests.Add(toDevelop);
                 }
                 else
                 {
-                    var toMaster = repository.CreatePullRequest(branchName, masterBranch, $"PR to {masterBranch} for {branchName}", $"PR to {masterBranch} for {branchName}");
-                    var toProduction = repository.CreatePullRequest(branchName, productionBranch, $"PR to {productionBranch} for {branchName}", $"PR to {productionBranch} for {branchName}");
+                    var toMaster = repository.CreatePullRequest(branchName, mainBranch, $"PR to {mainBranch} for {branchName}", body);
+                    _PullRequests.Add(toMaster);
+                    var linkMain = $"{toMaster.Url}".Replace("https://api.github.com/repos/", "https://github.com/").Replace("pulls", "pull");
+                    var toProduction = repository.CreatePullRequest(branchName, productionBranch, $"PR to {productionBranch} for {branchName}", $"{body}\r\nMerge to main {linkMain}");
+                    _PullRequests.Add(toProduction);
+                    var linkProd = $"{toProduction.Url}".Replace("https://api.github.com/repos/", "https://github.com/").Replace("pulls", "pull");
+                    var toDevelop = repository.CreatePullRequest(branchName, "develop", $"PR to develop for {branchName}", $"{body}\r\nMerge to main {linkMain}\r\nMerge to main {linkProd}");
+                    _PullRequests.Add(toDevelop);
                 }
 
                 UpdatePullRequestsValues();
@@ -947,6 +1043,15 @@ namespace ShiftFlow
             catch (Exception exception)
             {
                 MessageBox.Show(this, $"Error: {exception.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private string GetPullRequestBody(string content)
+        {
+            using (var pullRequestBodyPrompt = new PullRequestBodyPrompt(content))
+            {
+                pullRequestBodyPrompt.ShowDialog(this);
+                return PullRequestContent.Body;
             }
         }
 
@@ -958,6 +1063,11 @@ namespace ShiftFlow
         private void linkLabel2_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
         {
             Process.Start("chrome", linkLabel2.Text);
+        }
+
+        private void linkLabel3_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
+        {
+            Process.Start("chrome", linkLabel3.Text);
         }
     }
 
