@@ -21,7 +21,7 @@
     <OutputType>Package</OutputType>
     <DefineSolutionProperties>false</DefineSolutionProperties>
     <ArtifactsBinPath>C:\Users\marshj\work\FolderArtifact</ArtifactsBinPath>
-    <ArtifactsPublishPath>C:\Users\marshj\work\gitextensions\artifacts\bin\GitExtensions\Release\net461</ArtifactsPublishPath>
+    <ArtifactsPublishPath>C:\Users\marshj\work\Shift_organization\gitextensions\artifacts\bin\GitExtensions\Release\net461</ArtifactsPublishPath>
     <OutputPath>bin\$(Configuration)\</OutputPath>
     <IntermediateOutputPath>obj\$(Configuration)\</IntermediateOutputPath>
     <TreatWarningsAsErrors>True</TreatWarningsAsErrors>

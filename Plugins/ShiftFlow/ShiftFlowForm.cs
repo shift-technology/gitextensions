@@ -60,11 +60,16 @@ namespace ShiftFlow
         private readonly string _MasterBranches = $"{Branch.masters:G}";
         private readonly string _DevelopBranch = $"develop";
         private readonly string _GoldenBranch = $"main";
+        private readonly string _ShiftIntegrationBranchNamespace = "integrations";
+        private readonly string _ShiftRc2MainBranchNameTemplate = "rc2main_int_";
+        private readonly string _ShiftSup2DevBranchNameTemplate = "sup2dev_int_";
         private readonly string _StagingBranches = $"{Branch.releaseMain:G}";
         private readonly string _SupportBranches = $"{Branch.support:G}";
         private readonly string _ReleaseBranches = $"{Branch.releaseProd:G}";
         private readonly string _HotfixBranches = $"{Branch.hotfix:G}";
         private readonly string _ProductionBranches = $"{Branch.production:G}";
+
+        private readonly string _MergeOngoing = "MERGE ONGOING";
 
         private Dictionary<string, IReadOnlyList<string>> Branches { get; } = new Dictionary<string, IReadOnlyList<string>>();
 
@@ -349,8 +354,6 @@ namespace ShiftFlow
             }
 
             cbBranches.Enabled = isThereABranch;
-
-            btnFinish.Enabled = isThereABranch;
         }
 
         private void LoadBaseBranches()
@@ -448,14 +451,57 @@ namespace ShiftFlow
         #endregion
 
         #region Run ShiftFlow commands
+        private string CreateIntegrationBranch(string targetBranch, string templateName, int complementPrNumber, string branchName)
+        {
+            if (!FetchBranch(targetBranch))
+            {
+                throw new Exception($"Failed to fetch branch {targetBranch}");
+            }
+
+            var integrationBranchName = $"{_ShiftIntegrationBranchNamespace}/{templateName}{complementPrNumber}";
+
+            var args = new GitArgumentBuilder("checkout")
+                    {
+                        "-b",
+                        integrationBranchName,
+                        $"origin/{targetBranch}"
+                    };
+
+            if (!RunCommand(args))
+            {
+                return integrationBranchName;
+            }
+
+            txtBranchName.Text = string.Empty;
+            LoadBranches();
+
+            var args2 = new GitArgumentBuilder("merge")
+                    {
+                        branchName
+                    };
+
+            if (RunCommand(args2) && PushBranch(integrationBranchName))
+            {
+                return integrationBranchName;
+            }
+
+            throw new Exception(_MergeOngoing);
+        }
+
         private bool CreateBranch(string branchType, string branchName)
         {
             var baseBranch = GetBaseBranch();
+
+            if (!FetchBranch(baseBranch))
+            {
+                return false;
+            }
+
             var args = new GitArgumentBuilder("checkout")
                     {
                         "-b",
                         branchName,
-                        baseBranch
+                        $"origin/{baseBranch}"
                     };
 
             if (args == null)
@@ -476,12 +522,13 @@ namespace ShiftFlow
 
         private bool TagBranchCreation(string branchType, string branchName, int increment)
         {
-            if (branchType != _ReleaseBranches)
+            // We tag the creation of releaseMain branch
+            if (branchType != _StagingBranches)
             {
                 return false;
             }
 
-            var shortName = branchName.Remove(0, "release/".Length);
+            var shortName = branchName.Remove(0, $"{_StagingBranches}/".Length);
             var args = new GitArgumentBuilder("tag")
                     {
                         "-a",
@@ -514,6 +561,48 @@ namespace ShiftFlow
             return RunCommand(args);
         }
 
+        private bool Stage()
+        {
+            var args = new GitArgumentBuilder("add")
+                    {
+                        "."
+                    };
+
+            if (args == null)
+            {
+                return false;
+            }
+
+            return RunCommand(args);
+        }
+
+        private bool Stash()
+        {
+            var args = new GitArgumentBuilder("stash") { };
+
+            if (args == null)
+            {
+                return false;
+            }
+
+            return RunCommand(args);
+        }
+
+        private bool Unstash()
+        {
+            var args = new GitArgumentBuilder("stash")
+            {
+                "pop"
+            };
+
+            if (args == null)
+            {
+                return false;
+            }
+
+            return RunCommand(args);
+        }
+
         private bool PushBranch(string branchName)
         {
             var args = new GitArgumentBuilder("push")
@@ -531,10 +620,27 @@ namespace ShiftFlow
             return RunCommand(args);
         }
 
+        private bool FetchBranch(string branchName)
+        {
+            var args = new GitArgumentBuilder("fetch")
+                    {
+                        "origin",
+                        branchName
+                    };
+
+            if (args == null)
+            {
+                return false;
+            }
+
+            return RunCommand(args);
+        }
+
         private void btnStartBranch_Click(object sender, EventArgs e)
         {
             var branchType = cbType.SelectedValue.ToString();
             var branchName = $"{branchType}/{txtBranchName.Text}";
+
             if (!CreateBranch(branchType, branchName))
             {
                 return;
@@ -620,45 +726,104 @@ namespace ShiftFlow
             }
         }
 
-        private void btnFinish_Click(object sender, EventArgs e)
+        private void resolveConflictsToDevelop_Click(object sender, EventArgs e)
         {
-            if (string.IsNullOrEmpty(textBox2.Text))
+            if (string.IsNullOrEmpty(pullrequestToDevelop.Text))
             {
-                MessageBox.Show(this, $"The pull request has not been created", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show(this, $"The pull request to develop has not been created", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
-            var toMasterNumber = int.Parse(textBox2.Text.Remove(0, 4));
+            if (string.IsNullOrEmpty(pullrequestToMain.Text))
+            {
+                MessageBox.Show(this, $"The pull request to main has not been created", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
 
-            var branchName = cbBranches.SelectedItem.ToString();
+            var toDevelopNumber = int.Parse(pullrequestToDevelop.Text.Remove(0, 4));
+            var toMainNumber = int.Parse(pullrequestToMain.Text.Remove(0, 4));
 
             try
             {
                 var currentRepository = Path.GetFileName(_gitUiCommands.GitModule.WorkingDir.Trim('\\'));
-                var repository = Repositories[currentRepository];
+                var repository = Repositories?[currentRepository];
 
-                PullRequest toMaster = repository.GetPullRequest(toMasterNumber);
-
-                var success2 = toMaster.Merge(branchName);
-
-                if (!success2)
+                if (repository == null)
                 {
-                    var bodyMessage = $"Failed to merge {branchName} into {_GoldenBranch}\r\n";
-
-                    MessageBox.Show(this, bodyMessage, "Failed merge", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    MessageBox.Show(this, $"The repository {currentRepository} was not correctly registered", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
                 }
+
+                PullRequest toDevelop = repository.GetPullRequest(toDevelopNumber);
+
+                toDevelop.Close();
+
+                var integrationBranchName = CreateIntegrationBranch(_DevelopBranch, _ShiftSup2DevBranchNameTemplate, toMainNumber, toDevelop.Head.Ref);
+
+                repository.CreatePullRequest(integrationBranchName, _DevelopBranch, toDevelop.Title, toDevelop.Body);
+            }
+            catch (Exception ex) when (ex.Message == _MergeOngoing)
+            {
+                MessageBox.Show(this, $"You have to correct the merge conflicts before pushing the integration branch", "Merge ongoing", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
             catch (Exception exception)
             {
                 MessageBox.Show(this, $"Error: {exception.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
-
-            var argsTags = new GitArgumentBuilder("push")
+            finally
             {
-                "origin",
-                "--tags"
-            };
-            RunCommand(argsTags);
+                UpdatePullRequestsValues();
+            }
+        }
+
+        private void resolveConflictToMain_Click(object sender, EventArgs e)
+        {
+            if (string.IsNullOrEmpty(pullrequestToDevelop.Text))
+            {
+                MessageBox.Show(this, $"The pull request to develop has not been created", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            if (string.IsNullOrEmpty(pullrequestToMain.Text))
+            {
+                MessageBox.Show(this, $"The pull request to main has not been created", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            var toDevelopNumber = int.Parse(pullrequestToDevelop.Text.Remove(0, 4));
+            var toMainNumber = int.Parse(pullrequestToMain.Text.Remove(0, 4));
+
+            try
+            {
+                var currentRepository = Path.GetFileName(_gitUiCommands.GitModule.WorkingDir.Trim('\\'));
+                var repository = Repositories?[currentRepository];
+
+                if (repository == null)
+                {
+                    MessageBox.Show(this, $"The repository {currentRepository} was not correctly registered", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+
+                PullRequest toMain = repository.GetPullRequest(toMainNumber);
+
+                toMain.Close();
+
+                var integrationBranchName = CreateIntegrationBranch(_GoldenBranch, _ShiftRc2MainBranchNameTemplate, toDevelopNumber, toMain.Head.Ref);
+
+                repository.CreatePullRequest(integrationBranchName, _GoldenBranch, toMain.Title, toMain.Body);
+            }
+            catch (Exception ex) when (ex.Message == _MergeOngoing)
+            {
+                MessageBox.Show(this, $"You have to correct the merge conflicts before pushing the integration branch", "Merge ongoing", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            }
+            catch (Exception exception)
+            {
+                MessageBox.Show(this, $"Error: {exception.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+            finally
+            {
+                UpdatePullRequestsValues();
+            }
         }
 
         private bool RunCommand(ArgumentString commandText)
@@ -886,17 +1051,14 @@ namespace ShiftFlow
 
             try
             {
-                button1.Enabled = true;
-                button2.Enabled = false;
-                btnFinish.Enabled = false;
+                initializePrButton.Enabled = true;
                 comboBox1.Enabled = true;
                 label12.Text = "         ";
                 label13.Text = "         ";
                 label19.Text = "         ";
-                textBox1.Text = string.Empty;
-                textBox2.Text = string.Empty;
-                textBox3.Text = string.Empty;
-                button2.Text = "State";
+                pullrequestToDevelop.Text = string.Empty;
+                pullrequestToMain.Text = string.Empty;
+                pullrequestToProduction.Text = string.Empty;
                 linkLabel1.Visible = false;
                 linkLabel2.Visible = false;
                 linkLabel3.Visible = false;
@@ -908,7 +1070,7 @@ namespace ShiftFlow
 
                 if (branchName == _loading.Text || string.IsNullOrEmpty(branchName))
                 {
-                    button1.Enabled = false;
+                    initializePrButton.Enabled = false;
                     return;
                 }
 
@@ -939,6 +1101,10 @@ namespace ShiftFlow
                 }
 
                 var branchPullrequests = _PullRequests.Where(p => p.Head.Ref == branchName).ToArray();
+                var integrationBranchPullrequests = _PullRequests.Where(p => p.Head.Ref.StartsWith($"{_ShiftIntegrationBranchNamespace}/", StringComparison.InvariantCultureIgnoreCase)).ToArray();
+
+                int? idToDevelop = null;
+                int? idToMain = null;
 
                 foreach (var generalBranchPullrequest in branchPullrequests)
                 {
@@ -947,26 +1113,26 @@ namespace ShiftFlow
 
                     // var isMaster = branchPullrequest.Base.Ref.StartsWith($"{Branch.masters:G}/");
                     var isMaster = branchPullrequest.Base.Ref == _GoldenBranch;
-                    button1.Enabled = false;
+                    initializePrButton.Enabled = false;
                     var number = $"PR #{branchPullrequest.Number}";
                     var link = $"{branchPullrequest.Url}".Replace("https://api.github.com/repos/", "https://github.com/").Replace("pulls", "pull");
                     var mergeable = IsMergeable(branchPullrequest);
 
                     if (isDevelop)
                     {
-                        textBox1.Text = number;
+                        pullrequestToDevelop.Text = number;
+                        idToDevelop = branchPullrequest.Number;
                         linkLabel1.Text = link;
                         linkLabel1.Visible = true;
-                        button2.Text = branchPullrequest.State;
                         label12.BackColor = mergeable ? System.Drawing.Color.Green : System.Drawing.Color.Red;
                         label12.Text = branchPullrequest.Mergeable_state;
                     }
                     else if (isMaster)
                     {
-                        textBox2.Text = number;
+                        pullrequestToMain.Text = number;
+                        idToMain = branchPullrequest.Number;
                         linkLabel2.Text = link;
                         linkLabel2.Visible = true;
-                        btnFinish.Enabled = mergeable;
                         comboBox1.SelectedItem = branchPullrequest.Base.Ref;
                         comboBox1.Enabled = false;
                         label13.BackColor = mergeable ? System.Drawing.Color.Green : System.Drawing.Color.Red;
@@ -974,14 +1140,51 @@ namespace ShiftFlow
                     }
                     else if (hasProduction && !isMaster)
                     {
-                        textBox3.Text = number;
+                        pullrequestToProduction.Text = number;
                         linkLabel3.Text = link;
                         linkLabel3.Visible = true;
-                        button3.Enabled = mergeable;
                         comboBox1.SelectedItem = branchPullrequest.Base.Ref;
                         comboBox1.Enabled = false;
                         label19.BackColor = mergeable ? System.Drawing.Color.Green : System.Drawing.Color.Red;
                         label19.Text = branchPullrequest.Mergeable_state;
+                    }
+                }
+
+                foreach (var integrationBranchPullrequest in integrationBranchPullrequests)
+                {
+                    var branchPullrequest = repository.GetPullRequest(integrationBranchPullrequest.Number);
+                    var isDevelop = idToMain.HasValue && branchPullrequest.Head.Ref == $"{_ShiftIntegrationBranchNamespace}/{_ShiftSup2DevBranchNameTemplate}{idToMain.Value}" && branchPullrequest.Base.Ref == _DevelopBranch;
+                    var isMaster = idToDevelop.HasValue && branchPullrequest.Head.Ref == $"{_ShiftIntegrationBranchNamespace}/{_ShiftRc2MainBranchNameTemplate}{idToDevelop.Value}" && branchPullrequest.Base.Ref == _GoldenBranch;
+
+                    if (!isDevelop && !isMaster)
+                    {
+                        continue;
+                    }
+
+                    initializePrButton.Enabled = false;
+                    var number = $"PR #{branchPullrequest.Number}";
+                    var link = $"{branchPullrequest.Url}".Replace("https://api.github.com/repos/", "https://github.com/").Replace("pulls", "pull");
+                    var mergeable = IsMergeable(branchPullrequest);
+
+                    if (isDevelop)
+                    {
+                        pullrequestToDevelop.Text = number;
+                        idToDevelop = branchPullrequest.Number;
+                        linkLabel1.Text = link;
+                        linkLabel1.Visible = true;
+                        label12.BackColor = mergeable ? System.Drawing.Color.Green : System.Drawing.Color.Red;
+                        label12.Text = branchPullrequest.Mergeable_state;
+                    }
+                    else if (isMaster)
+                    {
+                        pullrequestToMain.Text = number;
+                        idToMain = branchPullrequest.Number;
+                        linkLabel2.Text = link;
+                        linkLabel2.Visible = true;
+                        comboBox1.SelectedItem = branchPullrequest.Base.Ref;
+                        comboBox1.Enabled = false;
+                        label13.BackColor = mergeable ? System.Drawing.Color.Green : System.Drawing.Color.Red;
+                        label13.Text = branchPullrequest.Mergeable_state;
                     }
                 }
             }
@@ -991,7 +1194,17 @@ namespace ShiftFlow
             }
         }
 
-        private void button1_Click(object sender, EventArgs e)
+        private void CreatePullRequestsDevContext(Repository repository, string branchName, string productionBranch, string body)
+        {
+            var toMain = repository.CreatePullRequest(branchName, productionBranch, $"PR to {productionBranch} for {branchName}", body);
+            _PullRequests.Add(toMain);
+            var link = $"{toMain.Url}".Replace("https://api.github.com/repos/", "https://github.com/").Replace("pulls", "pull");
+
+            var toDevelop = repository.CreatePullRequest(branchName, "develop", $"PR to develop for {branchName}", $"{body}\r\nMerge to main {link}");
+            _PullRequests.Add(toDevelop);
+        }
+
+        private void initializePrButton_Click(object sender, EventArgs e)
         {
             try
             {
@@ -1020,11 +1233,7 @@ namespace ShiftFlow
 
                 if (role == $"{Role.developer:G}")
                 {
-                    var toMaster = repository.CreatePullRequest(branchName, productionBranch, $"PR to {productionBranch} for {branchName}", body);
-                    _PullRequests.Add(toMaster);
-                    var link = $"{toMaster.Url}".Replace("https://api.github.com/repos/", "https://github.com/").Replace("pulls", "pull");
-                    var toDevelop = repository.CreatePullRequest(branchName, "develop", $"PR to develop for {branchName}", $"{body}\r\nMerge to main {link}");
-                    _PullRequests.Add(toDevelop);
+                    CreatePullRequestsDevContext(repository, branchName, productionBranch, body);
                 }
                 else
                 {

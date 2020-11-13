@@ -37,7 +37,7 @@ namespace ShiftFlow
             this.txtBranchName = new System.Windows.Forms.TextBox();
             this.btnCreateBranch = new System.Windows.Forms.Button();
             this.cbBranches = new System.Windows.Forms.ComboBox();
-            this.btnFinish = new System.Windows.Forms.Button();
+            this.resolveConflictToMain = new System.Windows.Forms.Button();
             this.gbManage = new System.Windows.Forms.GroupBox();
             this.pnlManageBranch = new System.Windows.Forms.Panel();
             this.panel5 = new System.Windows.Forms.Panel();
@@ -49,8 +49,8 @@ namespace ShiftFlow
             this.label19 = new System.Windows.Forms.Label();
             this.linkLabel3 = new System.Windows.Forms.LinkLabel();
             this.label20 = new System.Windows.Forms.Label();
-            this.textBox3 = new System.Windows.Forms.TextBox();
-            this.button3 = new System.Windows.Forms.Button();
+            this.pullrequestToProduction = new System.Windows.Forms.TextBox();
+            this.resolveConflictsToProduction = new System.Windows.Forms.Button();
             this.label11 = new System.Windows.Forms.Label();
             this.panel1 = new System.Windows.Forms.Panel();
             this.label17 = new System.Windows.Forms.Label();
@@ -58,17 +58,17 @@ namespace ShiftFlow
             this.label13 = new System.Windows.Forms.Label();
             this.linkLabel2 = new System.Windows.Forms.LinkLabel();
             this.label5 = new System.Windows.Forms.Label();
-            this.textBox2 = new System.Windows.Forms.TextBox();
+            this.pullrequestToMain = new System.Windows.Forms.TextBox();
             this.panel4 = new System.Windows.Forms.Panel();
             this.label16 = new System.Windows.Forms.Label();
             this.label1 = new System.Windows.Forms.Label();
             this.label12 = new System.Windows.Forms.Label();
             this.linkLabel1 = new System.Windows.Forms.LinkLabel();
-            this.button2 = new System.Windows.Forms.Button();
+            this.resolveConflictsToDevelop = new System.Windows.Forms.Button();
             this.label4 = new System.Windows.Forms.Label();
-            this.textBox1 = new System.Windows.Forms.TextBox();
+            this.pullrequestToDevelop = new System.Windows.Forms.TextBox();
             this.comboBox1 = new System.Windows.Forms.ComboBox();
-            this.button1 = new System.Windows.Forms.Button();
+            this.initializePrButton = new System.Windows.Forms.Button();
             this.cbManageType = new System.Windows.Forms.ComboBox();
             this.btnClose = new System.Windows.Forms.Button();
             this.cbType = new System.Windows.Forms.ComboBox();
@@ -161,16 +161,16 @@ namespace ShiftFlow
             this.cbBranches.TabIndex = 3;
             this.cbBranches.SelectedValueChanged += new System.EventHandler(this.cbBranches_SelectedValueChanged);
             // 
-            // btnFinish
+            // resolveConflictToMain
             // 
-            this.btnFinish.Location = new System.Drawing.Point(671, 29);
-            this.btnFinish.Margin = new System.Windows.Forms.Padding(4);
-            this.btnFinish.Name = "btnFinish";
-            this.btnFinish.Size = new System.Drawing.Size(74, 29);
-            this.btnFinish.TabIndex = 0;
-            this.btnFinish.Text = "Finish";
-            this.btnFinish.UseVisualStyleBackColor = true;
-            this.btnFinish.Click += new System.EventHandler(this.btnFinish_Click);
+            this.resolveConflictToMain.Location = new System.Drawing.Point(650, 29);
+            this.resolveConflictToMain.Margin = new System.Windows.Forms.Padding(4);
+            this.resolveConflictToMain.Name = "resolveConflictToMain";
+            this.resolveConflictToMain.Size = new System.Drawing.Size(95, 29);
+            this.resolveConflictToMain.TabIndex = 0;
+            this.resolveConflictToMain.Text = "Resolution";
+            this.resolveConflictToMain.UseVisualStyleBackColor = true;
+            this.resolveConflictToMain.Click += new System.EventHandler(this.resolveConflictToMain_Click);
             // 
             // gbManage
             // 
@@ -194,7 +194,7 @@ namespace ShiftFlow
             this.pnlManageBranch.Controls.Add(this.panel1);
             this.pnlManageBranch.Controls.Add(this.panel4);
             this.pnlManageBranch.Controls.Add(this.comboBox1);
-            this.pnlManageBranch.Controls.Add(this.button1);
+            this.pnlManageBranch.Controls.Add(this.initializePrButton);
             this.pnlManageBranch.Location = new System.Drawing.Point(12, 38);
             this.pnlManageBranch.Margin = new System.Windows.Forms.Padding(4);
             this.pnlManageBranch.Name = "pnlManageBranch";
@@ -236,8 +236,8 @@ namespace ShiftFlow
             this.panel2.Controls.Add(this.label19);
             this.panel2.Controls.Add(this.linkLabel3);
             this.panel2.Controls.Add(this.label20);
-            this.panel2.Controls.Add(this.textBox3);
-            this.panel2.Controls.Add(this.button3);
+            this.panel2.Controls.Add(this.pullrequestToProduction);
+            this.panel2.Controls.Add(this.resolveConflictsToProduction);
             this.panel2.Location = new System.Drawing.Point(6, 303);
             this.panel2.Name = "panel2";
             this.panel2.Size = new System.Drawing.Size(753, 102);
@@ -291,23 +291,24 @@ namespace ShiftFlow
             this.label20.TabIndex = 9;
             this.label20.Text = "Pull request to your production branch";
             // 
-            // textBox3
+            // pullrequestToProduction
             // 
-            this.textBox3.Enabled = false;
-            this.textBox3.Location = new System.Drawing.Point(184, 32);
-            this.textBox3.Name = "textBox3";
-            this.textBox3.Size = new System.Drawing.Size(276, 22);
-            this.textBox3.TabIndex = 2;
+            this.pullrequestToProduction.Enabled = false;
+            this.pullrequestToProduction.Location = new System.Drawing.Point(184, 32);
+            this.pullrequestToProduction.Name = "pullrequestToProduction";
+            this.pullrequestToProduction.Size = new System.Drawing.Size(276, 22);
+            this.pullrequestToProduction.TabIndex = 2;
             // 
-            // button3
+            // resolveConflictsToProduction
             // 
-            this.button3.Location = new System.Drawing.Point(671, 29);
-            this.button3.Margin = new System.Windows.Forms.Padding(4);
-            this.button3.Name = "button3";
-            this.button3.Size = new System.Drawing.Size(74, 29);
-            this.button3.TabIndex = 0;
-            this.button3.Text = "Finish";
-            this.button3.UseVisualStyleBackColor = true;
+            this.resolveConflictsToProduction.Enabled = false;
+            this.resolveConflictsToProduction.Location = new System.Drawing.Point(650, 29);
+            this.resolveConflictsToProduction.Margin = new System.Windows.Forms.Padding(4);
+            this.resolveConflictsToProduction.Name = "resolveConflictsToProduction";
+            this.resolveConflictsToProduction.Size = new System.Drawing.Size(95, 29);
+            this.resolveConflictsToProduction.TabIndex = 0;
+            this.resolveConflictsToProduction.Text = "Resolution";
+            this.resolveConflictsToProduction.UseVisualStyleBackColor = true;
             // 
             // label11
             // 
@@ -326,8 +327,8 @@ namespace ShiftFlow
             this.panel1.Controls.Add(this.label13);
             this.panel1.Controls.Add(this.linkLabel2);
             this.panel1.Controls.Add(this.label5);
-            this.panel1.Controls.Add(this.textBox2);
-            this.panel1.Controls.Add(this.btnFinish);
+            this.panel1.Controls.Add(this.pullrequestToMain);
+            this.panel1.Controls.Add(this.resolveConflictToMain);
             this.panel1.Location = new System.Drawing.Point(6, 195);
             this.panel1.Name = "panel1";
             this.panel1.Size = new System.Drawing.Size(753, 102);
@@ -381,13 +382,13 @@ namespace ShiftFlow
             this.label5.TabIndex = 9;
             this.label5.Text = "Pull request to your main branch";
             // 
-            // textBox2
+            // pullrequestToMain
             // 
-            this.textBox2.Enabled = false;
-            this.textBox2.Location = new System.Drawing.Point(184, 32);
-            this.textBox2.Name = "textBox2";
-            this.textBox2.Size = new System.Drawing.Size(276, 22);
-            this.textBox2.TabIndex = 2;
+            this.pullrequestToMain.Enabled = false;
+            this.pullrequestToMain.Location = new System.Drawing.Point(184, 32);
+            this.pullrequestToMain.Name = "pullrequestToMain";
+            this.pullrequestToMain.Size = new System.Drawing.Size(276, 22);
+            this.pullrequestToMain.TabIndex = 2;
             // 
             // panel4
             // 
@@ -396,9 +397,9 @@ namespace ShiftFlow
             this.panel4.Controls.Add(this.label1);
             this.panel4.Controls.Add(this.label12);
             this.panel4.Controls.Add(this.linkLabel1);
-            this.panel4.Controls.Add(this.button2);
+            this.panel4.Controls.Add(this.resolveConflictsToDevelop);
             this.panel4.Controls.Add(this.label4);
-            this.panel4.Controls.Add(this.textBox1);
+            this.panel4.Controls.Add(this.pullrequestToDevelop);
             this.panel4.Location = new System.Drawing.Point(6, 87);
             this.panel4.Name = "panel4";
             this.panel4.Size = new System.Drawing.Size(754, 102);
@@ -444,15 +445,16 @@ namespace ShiftFlow
             this.linkLabel1.TextAlign = System.Drawing.ContentAlignment.TopRight;
             this.linkLabel1.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.linkLabel1_LinkClicked);
             // 
-            // button2
+            // resolveConflictsToDevelop
             // 
-            this.button2.ForeColor = System.Drawing.Color.Red;
-            this.button2.Location = new System.Drawing.Point(672, 25);
-            this.button2.Name = "button2";
-            this.button2.Size = new System.Drawing.Size(74, 29);
-            this.button2.TabIndex = 11;
-            this.button2.Text = "Status";
-            this.button2.UseVisualStyleBackColor = true;
+            this.resolveConflictsToDevelop.ForeColor = System.Drawing.Color.Black;
+            this.resolveConflictsToDevelop.Location = new System.Drawing.Point(650, 25);
+            this.resolveConflictsToDevelop.Name = "resolveConflictsToDevelop";
+            this.resolveConflictsToDevelop.Size = new System.Drawing.Size(96, 29);
+            this.resolveConflictsToDevelop.TabIndex = 11;
+            this.resolveConflictsToDevelop.Text = "Resolution";
+            this.resolveConflictsToDevelop.UseVisualStyleBackColor = true;
+            this.resolveConflictsToDevelop.Click += new System.EventHandler(this.resolveConflictsToDevelop_Click);
             // 
             // label4
             // 
@@ -464,13 +466,13 @@ namespace ShiftFlow
             this.label4.TabIndex = 8;
             this.label4.Text = "Pull request to develop";
             // 
-            // textBox1
+            // pullrequestToDevelop
             // 
-            this.textBox1.Enabled = false;
-            this.textBox1.Location = new System.Drawing.Point(185, 31);
-            this.textBox1.Name = "textBox1";
-            this.textBox1.Size = new System.Drawing.Size(276, 22);
-            this.textBox1.TabIndex = 1;
+            this.pullrequestToDevelop.Enabled = false;
+            this.pullrequestToDevelop.Location = new System.Drawing.Point(185, 31);
+            this.pullrequestToDevelop.Name = "pullrequestToDevelop";
+            this.pullrequestToDevelop.Size = new System.Drawing.Size(276, 22);
+            this.pullrequestToDevelop.TabIndex = 1;
             // 
             // comboBox1
             // 
@@ -482,15 +484,15 @@ namespace ShiftFlow
             this.comboBox1.TabIndex = 7;
             this.comboBox1.SelectedValueChanged += new System.EventHandler(this.ComboBox1_SelectedValueChanged);
             // 
-            // button1
+            // initializePrButton
             // 
-            this.button1.Location = new System.Drawing.Point(475, 53);
-            this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(287, 29);
-            this.button1.TabIndex = 10;
-            this.button1.Text = "Initialize the pull requests for your branch";
-            this.button1.UseVisualStyleBackColor = true;
-            this.button1.Click += new System.EventHandler(this.button1_Click);
+            this.initializePrButton.Location = new System.Drawing.Point(475, 53);
+            this.initializePrButton.Name = "initializePrButton";
+            this.initializePrButton.Size = new System.Drawing.Size(287, 29);
+            this.initializePrButton.TabIndex = 10;
+            this.initializePrButton.Text = "Initialize the pull requests for your branch";
+            this.initializePrButton.UseVisualStyleBackColor = true;
+            this.initializePrButton.Click += new System.EventHandler(this.initializePrButton_Click);
             // 
             // cbManageType
             // 
@@ -799,7 +801,7 @@ namespace ShiftFlow
         private System.Windows.Forms.TextBox txtBranchName;
         private System.Windows.Forms.Button btnCreateBranch;
         private System.Windows.Forms.ComboBox cbBranches;
-        private System.Windows.Forms.Button btnFinish;
+        private System.Windows.Forms.Button resolveConflictToMain;
         private System.Windows.Forms.GroupBox gbManage;
         private System.Windows.Forms.Button btnClose;
         private System.Windows.Forms.ComboBox cbType;
@@ -821,13 +823,13 @@ namespace ShiftFlow
         private System.Windows.Forms.ComboBox cbBaseBranch;
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.Panel panel4;
-        private System.Windows.Forms.TextBox textBox2;
-        private System.Windows.Forms.TextBox textBox1;
+        private System.Windows.Forms.TextBox pullrequestToMain;
+        private System.Windows.Forms.TextBox pullrequestToDevelop;
         private ComboBox comboBox1;
         private Label label4;
         private Label label5;
-        private Button button1;
-        private Button button2;
+        private Button initializePrButton;
+        private Button resolveConflictsToDevelop;
         private Label label6;
         private LinkLabel linkLabel2;
         private LinkLabel linkLabel1;
@@ -848,8 +850,8 @@ namespace ShiftFlow
         private Label label19;
         private LinkLabel linkLabel3;
         private Label label20;
-        private TextBox textBox3;
-        private Button button3;
+        private TextBox pullrequestToProduction;
+        private Button resolveConflictsToProduction;
         private GroupBox groupBox1;
         private ComboBox comboBox2;
         private Label label21;
