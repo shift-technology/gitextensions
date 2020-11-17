@@ -59,7 +59,8 @@ namespace ShiftFlow
 
         private readonly string _MasterBranches = $"{Branch.masters:G}";
         private readonly string _DevelopBranch = $"develop";
-        private readonly string _GoldenBranch = $"main";
+        private static readonly string _ForceGoldenBranch = $"main";
+        private static readonly string _GearsGoldenBranch = $"main_gears";
         private readonly string _ShiftIntegrationBranchNamespace = "integrations";
         private readonly string _ShiftRc2MainBranchNameTemplate = "rc2main_int_";
         private readonly string _ShiftSup2DevBranchNameTemplate = "sup2dev_int_";
@@ -109,6 +110,25 @@ namespace ShiftFlow
         private static List<string> BranchTypes
         {
             get { return Enum.GetValues(typeof(Branch)).Cast<object>().Select(e => e.ToString()).ToList(); }
+        }
+
+        private static string GoldenBranch
+        {
+            get
+            {
+                var environment = ShiftFlowPlugin.Instance.EnvironmentSetting.ValueOrDefault(ShiftFlowPlugin.Instance.Settings);
+                switch (environment)
+                {
+                    case ShiftFlowPlugin.ForceEnvironment:
+                        return _ForceGoldenBranch;
+                    case ShiftFlowPlugin.GearsEnvironment:
+                        return _GearsGoldenBranch;
+                    default:
+                        {
+                            throw new Exception("Environment not defined");
+                        }
+                }
+            }
         }
 
         private List<string> GetBranchTypes()
@@ -341,15 +361,15 @@ namespace ShiftFlow
                 comboBox1.DataSource = Branches.ContainsKey(_ProductionBranches) ? Branches[_ProductionBranches] : new[] { string.Format(_noBranchExist.Text, _ProductionBranches) };
 
                 // comboBox3.DataSource = Branches.ContainsKey(_MasterBranches) ? Branches[_MasterBranches] : new[] { string.Format(_noBranchExist.Text, _MasterBranches) };
-                comboBox3.DataSource = new[] { _GoldenBranch };
-                comboBox3.SelectedItem = _GoldenBranch;
+                comboBox3.DataSource = new[] { GoldenBranch };
+                comboBox3.SelectedItem = GoldenBranch;
                 comboBox3.Enabled = false;
             }
             else
             {
                 // comboBox1.DataSource = Branches.ContainsKey(_MasterBranches) ? Branches[_MasterBranches] : new[] { string.Format(_noBranchExist.Text, _MasterBranches) };
-                comboBox1.DataSource = new[] { _GoldenBranch };
-                comboBox1.SelectedItem = _GoldenBranch;
+                comboBox1.DataSource = new[] { GoldenBranch };
+                comboBox1.SelectedItem = GoldenBranch;
                 comboBox1.Enabled = false;
             }
 
@@ -384,8 +404,8 @@ namespace ShiftFlow
                 }
                 else
                 {
-                    cbBaseBranch.DataSource = new[] { _GoldenBranch };
-                    cbBaseBranch.SelectedItem = _GoldenBranch;
+                    cbBaseBranch.DataSource = new[] { GoldenBranch };
+                    cbBaseBranch.SelectedItem = GoldenBranch;
                     cbBaseBranch.Enabled = false;
                 }
             }
@@ -445,7 +465,7 @@ namespace ShiftFlow
                 return $"/{Branch.production:G}/";
             }
 
-            return $"/{_GoldenBranch}";
+            return $"/{GoldenBranch}";
         }
 
         #endregion
@@ -719,7 +739,7 @@ namespace ShiftFlow
                 case Branch.releaseProd:
                 case Branch.support:
                 case Branch.production:
-                    return _GoldenBranch;
+                    return GoldenBranch;
                 case Branch.releaseMain:
                 default:
                     return _DevelopBranch;
@@ -808,9 +828,9 @@ namespace ShiftFlow
 
                 toMain.Close();
 
-                var integrationBranchName = CreateIntegrationBranch(_GoldenBranch, _ShiftRc2MainBranchNameTemplate, toDevelopNumber, toMain.Head.Ref);
+                var integrationBranchName = CreateIntegrationBranch(GoldenBranch, _ShiftRc2MainBranchNameTemplate, toDevelopNumber, toMain.Head.Ref);
 
-                repository.CreatePullRequest(integrationBranchName, _GoldenBranch, toMain.Title, toMain.Body);
+                repository.CreatePullRequest(integrationBranchName, GoldenBranch, toMain.Title, toMain.Body);
             }
             catch (Exception ex) when (ex.Message == _MergeOngoing)
             {
@@ -1112,7 +1132,7 @@ namespace ShiftFlow
                     var isDevelop = branchPullrequest.Base.Ref == _DevelopBranch;
 
                     // var isMaster = branchPullrequest.Base.Ref.StartsWith($"{Branch.masters:G}/");
-                    var isMaster = branchPullrequest.Base.Ref == _GoldenBranch;
+                    var isMaster = branchPullrequest.Base.Ref == GoldenBranch;
                     initializePrButton.Enabled = false;
                     var number = $"PR #{branchPullrequest.Number}";
                     var link = $"{branchPullrequest.Url}".Replace("https://api.github.com/repos/", "https://github.com/").Replace("pulls", "pull");
@@ -1154,7 +1174,7 @@ namespace ShiftFlow
                 {
                     var branchPullrequest = repository.GetPullRequest(integrationBranchPullrequest.Number);
                     var isDevelop = idToMain.HasValue && branchPullrequest.Head.Ref == $"{_ShiftIntegrationBranchNamespace}/{_ShiftSup2DevBranchNameTemplate}{idToMain.Value}" && branchPullrequest.Base.Ref == _DevelopBranch;
-                    var isMaster = idToDevelop.HasValue && branchPullrequest.Head.Ref == $"{_ShiftIntegrationBranchNamespace}/{_ShiftRc2MainBranchNameTemplate}{idToDevelop.Value}" && branchPullrequest.Base.Ref == _GoldenBranch;
+                    var isMaster = idToDevelop.HasValue && branchPullrequest.Head.Ref == $"{_ShiftIntegrationBranchNamespace}/{_ShiftRc2MainBranchNameTemplate}{idToDevelop.Value}" && branchPullrequest.Base.Ref == GoldenBranch;
 
                     if (!isDevelop && !isMaster)
                     {
