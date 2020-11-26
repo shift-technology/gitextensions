@@ -3,21 +3,13 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Linq.Expressions;
-using System.Net;
-using System.Net.Http;
-using System.Net.Http.Headers;
-using System.Runtime.InteropServices;
-using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using Git.hub;
 using GitCommands;
-using GitCommands.Utils;
 using GitExtUtils;
 using GitExtUtils.GitUI;
-using GitHub3;
 using GitUIPluginInterfaces;
 using ResourceManager;
 using ShiftFlow.Properties;
@@ -212,12 +204,24 @@ namespace ShiftFlow
                 }
 
                 var currentRepository = Path.GetFileName(_gitUiCommands.GitModule.WorkingDir.Trim('\\'));
-                var repository = Repositories[currentRepository];
+                var repository = RetrieveRepository(currentRepository);
+
+                if (repository == null)
+                {
+                    return null;
+                }
+
                 var prs = repository.GetPullRequests();
                 return prs.ToList();
             }
 
-            _PullRequests = GetPullRequests();
+            var prs = GetPullRequests();
+            if (prs == null)
+            {
+                return;
+            }
+
+            _PullRequests = prs;
             UpdatePullRequestsValues();
             _LoadPullRequestsTask = null;
         }
@@ -746,6 +750,23 @@ namespace ShiftFlow
             }
         }
 
+        private Repository RetrieveRepository(string repository)
+        {
+            if (Repositories == null)
+            {
+                MessageBox.Show(this, $"The repositories were not correctly registered", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return null;
+            }
+
+            if (Repositories.TryGetValue(repository, out var res))
+            {
+                return res;
+            }
+
+            MessageBox.Show(this, $"The repository {repository} was not correctly registered", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            return null;
+        }
+
         private void resolveConflictsToDevelop_Click(object sender, EventArgs e)
         {
             if (string.IsNullOrEmpty(pullrequestToDevelop.Text))
@@ -766,11 +787,10 @@ namespace ShiftFlow
             try
             {
                 var currentRepository = Path.GetFileName(_gitUiCommands.GitModule.WorkingDir.Trim('\\'));
-                var repository = Repositories?[currentRepository];
+                var repository = RetrieveRepository(currentRepository);
 
                 if (repository == null)
                 {
-                    MessageBox.Show(this, $"The repository {currentRepository} was not correctly registered", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     return;
                 }
 
@@ -816,11 +836,10 @@ namespace ShiftFlow
             try
             {
                 var currentRepository = Path.GetFileName(_gitUiCommands.GitModule.WorkingDir.Trim('\\'));
-                var repository = Repositories?[currentRepository];
+                var repository = RetrieveRepository(currentRepository);
 
                 if (repository == null)
                 {
-                    MessageBox.Show(this, $"The repository {currentRepository} was not correctly registered", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     return;
                 }
 
@@ -1113,7 +1132,7 @@ namespace ShiftFlow
                 }
 
                 var currentRepository = Path.GetFileName(_gitUiCommands.GitModule.WorkingDir.Trim('\\'));
-                var repository = Repositories[currentRepository];
+                var repository = RetrieveRepository(currentRepository);
 
                 if (_PullRequests == null)
                 {
@@ -1244,7 +1263,12 @@ namespace ShiftFlow
                 }
 
                 var currentRepository = Path.GetFileName(_gitUiCommands.GitModule.WorkingDir.Trim('\\'));
-                var repository = Repositories[currentRepository];
+                var repository = RetrieveRepository(currentRepository);
+
+                if (repository == null)
+                {
+                    return;
+                }
 
                 var body = GetPullRequestBody($"Pull request for {branchName}");
 
