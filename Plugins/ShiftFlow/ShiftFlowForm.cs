@@ -203,8 +203,7 @@ namespace ShiftFlow
                     }
                 }
 
-                var currentRepository = Path.GetFileName(_gitUiCommands.GitModule.WorkingDir.Trim('\\'));
-                var repository = RetrieveRepository(currentRepository);
+                var repository = RetrieveRepository();
 
                 if (repository == null)
                 {
@@ -313,7 +312,7 @@ namespace ShiftFlow
 
             foreach (var repository in GitHub.getRepositories())
             {
-                Repositories[repository.Name] = repository;
+                Repositories[repository.SshUrl] = repository;
             }
         }
 
@@ -493,7 +492,12 @@ namespace ShiftFlow
 
             if (!RunCommand(args))
             {
-                return integrationBranchName;
+                throw new Exception($"Failed to create integration branch {integrationBranchName}");
+            }
+
+            if (!PushBranch(integrationBranchName))
+            {
+                throw new Exception($"Failed to push branch {integrationBranchName}");
             }
 
             txtBranchName.Text = string.Empty;
@@ -504,8 +508,13 @@ namespace ShiftFlow
                         branchName
                     };
 
-            if (RunCommand(args2) && PushBranch(integrationBranchName))
+            if (RunCommand(args2))
             {
+                if (!PushCurrentBranch())
+                {
+                    throw new Exception($"Failed to push branch {integrationBranchName}");
+                }
+
                 return integrationBranchName;
             }
 
@@ -627,14 +636,26 @@ namespace ShiftFlow
             return RunCommand(args);
         }
 
-        private bool PushBranch(string branchName)
+        private bool PushBranch(string branchName, bool setUpstream = true)
         {
-            var args = new GitArgumentBuilder("push")
+            GitArgumentBuilder args = new GitArgumentBuilder("push")
                     {
-                        "-u",
                         $"origin",
-                        branchName
+                        branchName,
+                        "-u"
                     };
+
+            if (args == null)
+            {
+                return false;
+            }
+
+            return RunCommand(args);
+        }
+
+        private bool PushCurrentBranch()
+        {
+            GitArgumentBuilder args = new GitArgumentBuilder("push");
 
             if (args == null)
             {
@@ -750,8 +771,10 @@ namespace ShiftFlow
             }
         }
 
-        private Repository RetrieveRepository(string repository)
+        private Repository RetrieveRepository()
         {
+            var repository = _gitUiCommands.GitModule.LocalConfigFile.GetValue("remote \"origin\".url");
+
             if (Repositories == null)
             {
                 MessageBox.Show(this, $"The repositories were not correctly registered", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Error);
@@ -786,8 +809,7 @@ namespace ShiftFlow
 
             try
             {
-                var currentRepository = Path.GetFileName(_gitUiCommands.GitModule.WorkingDir.Trim('\\'));
-                var repository = RetrieveRepository(currentRepository);
+                var repository = RetrieveRepository();
 
                 if (repository == null)
                 {
@@ -835,8 +857,7 @@ namespace ShiftFlow
 
             try
             {
-                var currentRepository = Path.GetFileName(_gitUiCommands.GitModule.WorkingDir.Trim('\\'));
-                var repository = RetrieveRepository(currentRepository);
+                var repository = RetrieveRepository();
 
                 if (repository == null)
                 {
@@ -1131,8 +1152,7 @@ namespace ShiftFlow
                     return;
                 }
 
-                var currentRepository = Path.GetFileName(_gitUiCommands.GitModule.WorkingDir.Trim('\\'));
-                var repository = RetrieveRepository(currentRepository);
+                var repository = RetrieveRepository();
 
                 if (_PullRequests == null)
                 {
@@ -1262,8 +1282,7 @@ namespace ShiftFlow
                     return;
                 }
 
-                var currentRepository = Path.GetFileName(_gitUiCommands.GitModule.WorkingDir.Trim('\\'));
-                var repository = RetrieveRepository(currentRepository);
+                var repository = RetrieveRepository();
 
                 if (repository == null)
                 {
