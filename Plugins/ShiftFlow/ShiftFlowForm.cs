@@ -312,7 +312,20 @@ namespace ShiftFlow
 
             foreach (var repository in GitHub.getRepositories())
             {
-                Repositories[repository.SshUrl] = repository;
+                if (!string.IsNullOrEmpty(repository.SshUrl))
+                {
+                    Repositories[repository.SshUrl] = repository;
+                }
+
+                if (!string.IsNullOrEmpty(repository.CloneUrl))
+                {
+                    Repositories[repository.CloneUrl] = repository;
+                }
+
+                if (!string.IsNullOrEmpty(repository.GitUrl))
+                {
+                    Repositories[repository.GitUrl] = repository;
+                }
             }
         }
 
