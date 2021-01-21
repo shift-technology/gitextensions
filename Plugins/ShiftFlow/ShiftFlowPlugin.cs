@@ -10,10 +10,11 @@ namespace ShiftFlow
     public class ShiftFlowPlugin : GitPluginBase, IGitPluginForRepository
     {
         public const string GearsEnvironment = "Gears";
+        public const string LukeEnvironment = "Luke";
         public const string ForceEnvironment = "Force v2";
 
         public readonly StringSetting OAuthToken = new StringSetting("OAuth Token", "");
-        public readonly ChoiceSetting EnvironmentSetting = new ChoiceSetting("Project environment", new List<string>() { ForceEnvironment, GearsEnvironment }, ForceEnvironment);
+        public readonly ChoiceSetting EnvironmentSetting = new ChoiceSetting("Project environment", new List<string>() { ForceEnvironment, GearsEnvironment, LukeEnvironment }, ForceEnvironment);
         internal static ShiftFlowPlugin Instance;
 
         public ShiftFlowPlugin() : base(true)

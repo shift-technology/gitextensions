@@ -53,6 +53,7 @@ namespace ShiftFlow
         private readonly string _DevelopBranch = $"develop";
         private static readonly string _ForceGoldenBranch = $"main";
         private static readonly string _GearsGoldenBranch = $"main_gears";
+        private static readonly string _LukeGoldenBranch = $"main_luke";
         private readonly string _ShiftIntegrationBranchNamespace = "integrations";
         private readonly string _ShiftRc2MainBranchNameTemplate = "rc2main_int_";
         private readonly string _ShiftSup2DevBranchNameTemplate = "sup2dev_int_";
@@ -115,6 +116,8 @@ namespace ShiftFlow
                         return _ForceGoldenBranch;
                     case ShiftFlowPlugin.GearsEnvironment:
                         return _GearsGoldenBranch;
+                    case ShiftFlowPlugin.LukeEnvironment:
+                        return _LukeGoldenBranch;
                     default:
                         {
                             throw new Exception("Environment not defined");
